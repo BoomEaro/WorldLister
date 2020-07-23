@@ -1,0 +1,12 @@
+name: WorldLister
+main: ru.boomearo.worldlister.WorldLister
+version: 0.10.7
+author: BoomEaro
+description: World lister
+api-version: 1.13
+softdepend: [MultiWorld, Multiverse-Core]
+commands:
+  worldlist:
+    usage: /worldlist access/list
+    aliases: [wol]
+    description: add/remove player
