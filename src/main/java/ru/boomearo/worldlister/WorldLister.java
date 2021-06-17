@@ -14,7 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.boomearo.worldlister.command.Commands;
 import ru.boomearo.worldlister.database.Sql;
-import ru.boomearo.worldlister.database.runnable.settings.PutSettingsThread;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.listeners.CheckListener;
@@ -63,8 +62,8 @@ public class WorldLister extends JavaPlugin implements Listener {
             Sql.getInstance().disconnect();
             getLogger().info("Успешно отключился от базы данных");
         }
-        catch (SQLException e1) {
-            e1.printStackTrace();
+        catch (Exception e) {
+            e.printStackTrace();
         }
         getLogger().info("Плагин успешно выключился.");
     }
@@ -78,10 +77,7 @@ public class WorldLister extends JavaPlugin implements Listener {
             getDataFolder().mkdir();
         }
         try {
-            for (World w : Bukkit.getWorlds()) {
-                Sql.getInstance().createNewDatabaseWorld(w.getName());
-            }
-            Sql.getInstance().createNewDatabaseSettings();
+            Sql.initSql();
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -91,17 +87,18 @@ public class WorldLister extends JavaPlugin implements Listener {
     public void loadWorlds()  {
         try {
             for (World w : Bukkit.getWorlds()) {
-                SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
+                SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
                 if (sw != null) {
                     this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
                 }
                 else {
                     this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
-                    new PutSettingsThread(w.getName(), false, "PUBLIC");
+
+                    Sql.getInstance().putSettings(w.getName(), false, "PUBLIC");
                 }
             }
             for (WorldInfo wi : this.worlds.values()) {
-                for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName())) {
+                for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName()).get()) {
                     wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
                 }
             }

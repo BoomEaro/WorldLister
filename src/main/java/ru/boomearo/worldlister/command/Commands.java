@@ -16,10 +16,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import ru.boomearo.worldlister.WorldLister;
-import ru.boomearo.worldlister.database.runnable.settings.UpdateSettingsThread;
-import ru.boomearo.worldlister.database.runnable.world.PutWorldPlayerThread;
-import ru.boomearo.worldlister.database.runnable.world.RemoveWorldPlayerThread;
-import ru.boomearo.worldlister.database.runnable.world.UpdateWorldPlayerThread;
+import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccess;
@@ -192,7 +189,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                             if (wp.getType() == PlayerType.OWNER) {
                                 if (wi.isJoinIfOwnerOnline()) {
                                     wi.setJoinIfOwnerOnline(false);
-                                    new UpdateSettingsThread(wi.getName(), false, wi.getAcess().toString());
+                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAcess().toString());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -200,7 +197,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 }
                                 else {
                                     wi.setJoinIfOwnerOnline(true);
-                                    new UpdateSettingsThread(wi.getName(), true, wi.getAcess().toString());
+                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAcess().toString());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdActiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdActiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -249,7 +246,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return true;
                     }
                     wi.addWorldPlayer(new WorldPlayer(args[1], PlayerType.SPECTATOR, System.currentTimeMillis(), pl.getName()));
-                    new PutWorldPlayerThread(plw, args[1], "SPECTATOR", System.currentTimeMillis(), pl.getName());
+                    Sql.getInstance().putWorldPlayer(plw, args[1], "SPECTATOR", System.currentTimeMillis(), pl.getName());
                     sender.sendMessage(MessageManager.get().getMessage("addWorldSucc").replace("%PLAYER%", args[1]));
                     pla.sendMessage(MessageManager.get().getMessage("addWorldToPl").replace("%PLAYER%", args[1]).replace("%WORLD%", plw));
                 }
@@ -285,7 +282,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return true;
                     }
                     wi.removeWorldPlayer(args[1]);
-                    new RemoveWorldPlayerThread(plw, args[1]);
+                    Sql.getInstance().removeWorldPlayer(plw, args[1]);
                     Player pla = WorldLister.getPlayerRight(args[1]);
                     if (pla != null) {
                         if (pla.getLocation().getWorld().getName().equals(plw)) {
@@ -335,7 +332,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                         return true;
                                     }
                                     wi.setAccess(WorldAccess.PUBLIC);
-                                    new UpdateSettingsThread(wi.getName(), wi.isJoinIfOwnerOnline(), "PUBLIC");
+                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), "PUBLIC");
                                     sender.sendMessage(MessageManager.get().getMessage("cmdChangeModePublic"));
                                     for (Player pla : Bukkit.getOnlinePlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdChangeModePublicAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
@@ -347,7 +344,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                         return true;
                                     }
                                     wi.setAccess(WorldAccess.ACCESS);
-                                    new UpdateSettingsThread(wi.getName(), wi.isJoinIfOwnerOnline(), "ACCESS");
+                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), "ACCESS");
                                     sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccess"));
                                     for (Player pla : Bukkit.getOnlinePlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccessAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
@@ -435,7 +432,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wpa.setType(PlayerType.MODER);
-                            new UpdateWorldPlayerThread(plw, wpa.getName(), PlayerType.MODER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MODER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
                             pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "модератор"));
                             Player pla = WorldLister.getPlayerRight(args[1]);
                             if (pla != null) {
@@ -448,7 +445,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wpa.setType(PlayerType.MEMBER);
-                            new UpdateWorldPlayerThread(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
                             pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "участник"));
                             Player pla = WorldLister.getPlayerRight(args[1]);
                             if (pla != null) {
@@ -461,7 +458,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wpa.setType(PlayerType.SPECTATOR);
-                            new UpdateWorldPlayerThread(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
                             pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "наблюдатель"));
                             Player pla = WorldLister.getPlayerRight(args[1]);
                             if (pla != null) {
@@ -483,7 +480,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wpa.setType(PlayerType.MEMBER);
-                            new UpdateWorldPlayerThread(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
                             pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "участник"));
                             Player pla = WorldLister.getPlayerRight(args[1]);
                             if (pla != null) {
@@ -496,7 +493,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wpa.setType(PlayerType.SPECTATOR);
-                            new UpdateWorldPlayerThread(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
                             pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "наблюдатель"));
                             Player pla = WorldLister.getPlayerRight(args[1]);
                             if (pla != null) {
@@ -534,11 +531,11 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 return true;
                             }
                             wp.setType(PlayerType.OWNER);
-                            new UpdateWorldPlayerThread(wi.getName(), wp.getName(), PlayerType.OWNER.toString(), wp.getTimeAdded(), wp.getWhoAdd());
+                            Sql.getInstance().updateWorldPlayer(wi.getName(), wp.getName(), PlayerType.OWNER.toString(), wp.getTimeAdded(), wp.getWhoAdd());
                         }
                         else {
                             wi.addWorldPlayer(new WorldPlayer(args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName()));
-                            new PutWorldPlayerThread(args[1], args[2], PlayerType.OWNER.toString(), System.currentTimeMillis(), sender.getName());
+                            Sql.getInstance().updateWorldPlayer(args[1], args[2], PlayerType.OWNER.toString(), System.currentTimeMillis(), sender.getName());
                         }
                         sender.sendMessage("Игрок успешно установлен владельцем мира " + args[1]);
                     }
@@ -553,7 +550,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         if (wp != null) {
                             if (wp.getType() == PlayerType.OWNER) {
                                 wi.removeWorldPlayer(args[2]);
-                                new RemoveWorldPlayerThread(args[1], args[2]);
+                                Sql.getInstance().removeWorldPlayer(args[1], args[2]);
                                 sender.sendMessage("Игрок успешно удален из владельцев мира " + args[1]);
                             }
                             else {

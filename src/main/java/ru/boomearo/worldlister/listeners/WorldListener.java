@@ -8,7 +8,6 @@ import org.bukkit.event.world.WorldUnloadEvent;
 
 import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
-import ru.boomearo.worldlister.database.runnable.settings.PutSettingsThread;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.objects.PlayerType;
@@ -28,7 +27,7 @@ public class WorldListener implements Listener {
         try {
             Sql.getInstance().createNewDatabaseWorld(w.getName());
 
-            SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
+            SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
             if (sw != null) {
                 worldInfo = new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access));
                 WorldLister.getInstance().addWorldInfo(worldInfo);
@@ -36,9 +35,10 @@ public class WorldListener implements Listener {
             else {
                 worldInfo = new WorldInfo(w.getName(), false, WorldAccess.PUBLIC);
                 WorldLister.getInstance().addWorldInfo(worldInfo);
-                new PutSettingsThread(w.getName(), false, "PUBLIC");
+
+                Sql.getInstance().putSettings(w.getName(), false, "PUBLIC");
             }
-            for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(w.getName())) {
+            for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(w.getName()).get()) {
                 worldInfo.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
             }
         }
