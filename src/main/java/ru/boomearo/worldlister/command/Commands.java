@@ -29,6 +29,8 @@ import ru.boomearo.worldlister.utils.DateUtil;
 
 public class Commands implements CommandExecutor, TabCompleter {
 
+    private static final List<String> empty = new ArrayList<>();
+
     public boolean onCommand(CommandSender sender, Command worldlist, String label, String[] args) {
         if (sender instanceof Player) {
             Player pl = (Player) sender;
@@ -95,14 +97,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                             msg4 += list4[i] + (i != len4 - 1 ? ChatColor.WHITE + ", " : "");
                         }
 
-                        Boolean advmode = wi.isJoinIfOwnerOnline();
+                        boolean advmode = wi.isJoinIfOwnerOnline();
                         String joinmode = wi.getAcess().toString().toLowerCase();
                         sender.sendMessage(ChatColor.GOLD + "Список игроков и групп:");
                         sender.sendMessage("Владельцы " + ChatColor.GOLD + "(" + len3 + ")" + ChatColor.WHITE + ": " + msg3);
                         sender.sendMessage("Модераторы: " + ChatColor.GOLD + "(" + len2 + ")" + ChatColor.WHITE + ": " + msg2);
                         sender.sendMessage("Участники: " + ChatColor.GOLD + "(" + len + ")" + ChatColor.WHITE + ": " + msg);
                         sender.sendMessage("Наблюдатели: " + ChatColor.GOLD + "(" + len4 + ")" + ChatColor.WHITE + ": " + msg4);
-                        sender.sendMessage("Улучшенный режим: " + advmode.toString().replace("true", ChatColor.GREEN + "Активирован").replace("false", ChatColor.RED + "Деактивирован"));
+                        sender.sendMessage("Улучшенный режим: " + (advmode ? ChatColor.GREEN + "Активирован" : ChatColor.RED + "Деактивирован"));
                         sender.sendMessage("Режим входа: " + joinmode.replace("access", ChatColor.RED + "Закрытый").replace("public", ChatColor.GREEN + "Публичный"));
                     }
                     else {
@@ -190,7 +192,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp != null) {
                             if (wp.getType() == PlayerType.OWNER) {
-                                if (wi.isJoinIfOwnerOnline() == true) {
+                                if (wi.isJoinIfOwnerOnline()) {
                                     wi.setJoinIfOwnerOnline(false);
                                     new UpdateSettingsThread(wi.getName(), false, wi.getAcess().toString());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode").replace("&", "\u00a7"));
@@ -576,8 +578,6 @@ public class Commands implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private static final List<String> empty = new ArrayList<>();
-
     @Override
     public List<String> onTabComplete(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
         if (arg0 instanceof Player) {
@@ -645,9 +645,6 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                         return matches;
                     }
-                    else {
-                        return empty;
-                    }
                 }
                 else if (arg3[0].equalsIgnoreCase("removeplayer") || arg3[0].equalsIgnoreCase("set") || arg3[0].equalsIgnoreCase("player")) {
                     String plw = pl.getWorld().getName();
@@ -669,9 +666,6 @@ public class Commands implements CommandExecutor, TabCompleter {
                             }
                         }
                         return matches;
-                    }
-                    else {
-                        return empty;
                     }
                 }
                 else if (arg3[0].equalsIgnoreCase("accessmode")) {
@@ -695,12 +689,6 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                         return matches;
                     }
-                    else {
-                        return empty;
-                    }
-                }
-                else {
-                    return empty;
                 }
             }
             if (arg3.length == 3) {
@@ -731,16 +719,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                         return matches;
                     }
-                    else {
-                        return empty;
-                    }
                 }
-                else {
-                    return empty;
-                }
-            }
-            else {
-                return empty;
             }
         }
         else {
@@ -801,14 +780,9 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                     return matches;
                 }
-                else {
-                    return empty;
-                }
-            }
-            else {
-                return empty;
             }
         }
+        return empty;
     }
 
 }
