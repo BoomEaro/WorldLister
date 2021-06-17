@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -58,20 +61,13 @@ public class CheckListener implements Listener {
             return;
         }
         PlayerType type = wp.getType();
+
         if (!wi.isJoinIfOwnerOnline()) {
-            if (!(type == PlayerType.MODER || type == PlayerType.OWNER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR)) {
-                pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
             if (type == PlayerType.SPECTATOR) {
                 WorldLister.tpWorldClear(pl);
             }
         }
         else {
-            if (!(type == PlayerType.MODER || type == PlayerType.OWNER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR)) {
-                pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
             if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                 WorldLister.tpWorldClear(pl);
             }
@@ -93,12 +89,6 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("joinPerms");
         if (wp == null) {
-            pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-            pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!(type == PlayerType.MODER || type == PlayerType.OWNER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR)) {
             pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
             pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
         }
@@ -123,7 +113,7 @@ public class CheckListener implements Listener {
                         }
                         if (playerOnline.size() <= 1) {
                             for (Player ppp : Bukkit.getWorld(wi.getName()).getPlayers()) {
-                                String info1 = "&cПоследний владелец " + pl.getName() + " мира '" + wi.getName() + "' покинул сервер. Теперь у вас отсутствует доступ к модификции этого мира.";
+                                String info1 = "&cПоследний владелец " + pl.getName() + " мира '" + wi.getName() + "' покинул сервер. Теперь у вас отсутствует доступ к модификации этого мира.";
                                 ppp.sendMessage(info1.replace("&", "\u00a7"));
                             }
                         }
@@ -133,255 +123,47 @@ public class CheckListener implements Listener {
         }
     }
 
-
     @EventHandler
     public void onBlockBreakEvent(BlockBreakEvent e) {
         Player pl = e.getPlayer();
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-        if (wi == null) {
-            return;
-        }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
-            return;
-        }
-        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        String msg = MessageManager.get().getMessage("specBreakFailed");
-        if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
-            e.setCancelled(true);
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!wi.isJoinIfOwnerOnline()) {
-            if (type == PlayerType.SPECTATOR) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
-        }
-        else {
-            if (!WorldLister.checkOnline(wi)) {
-                if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-
-        }
+        checkProtection(pl, e, "specBreakFailed");
     }
 
     @EventHandler
     public void onBlockPlaceEvent(BlockPlaceEvent e) {
         Player pl = e.getPlayer();
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-        if (wi == null) {
-            return;
-        }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
-            return;
-        }
-        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        String msg = MessageManager.get().getMessage("specPlaceFailed");
-        if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
-            e.setCancelled(true);
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!wi.isJoinIfOwnerOnline()) {
-            if (type == PlayerType.SPECTATOR) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
-        }
-        else {
-            if (!WorldLister.checkOnline(wi)) {
-                if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-        }
+        checkProtection(pl, e, "specPlaceFailed");
     }
 
     @EventHandler
     public void onPlayerDropItemEvent(PlayerDropItemEvent e) {
         Player pl = e.getPlayer();
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-        if (wi == null) {
-            return;
-        }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
-            return;
-        }
-        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        String msg = MessageManager.get().getMessage("specDropFailed");
-        if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
-            e.setCancelled(true);
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!wi.isJoinIfOwnerOnline()) {
-            if (type == PlayerType.SPECTATOR) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
-        }
-        else {
-            if (!WorldLister.checkOnline(wi)) {
-                if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-        }
+        checkProtection(pl, e, "specDropFailed");
     }
 
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e) {
         Player pl = e.getPlayer();
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-        if (wi == null) {
-            return;
-        }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
-            return;
-        }
-        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        if (wp == null) {
-            e.setCancelled(true);
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!wi.isJoinIfOwnerOnline()) {
-            if (type == PlayerType.SPECTATOR) {
-                e.setCancelled(true);
-            }
-        }
-        else {
-            if (!WorldLister.checkOnline(wi)) {
-                if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    e.setCancelled(true);
-                }
-            }
-        }
+        checkProtection(pl, e);
     }
 
 
     @EventHandler
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent e) {
-        if (e.getDamager() instanceof Player) {
-            Player pl = (Player) e.getDamager();
-            if (pl.hasMetadata("NPC")) {
-                return;
-            }
-            String w = e.getEntity().getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            String msg = MessageManager.get().getMessage("specDamageFailed");
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp == null) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-            }
+        Entity en = e.getDamager();
+        if (en  instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e, "specDamageFailed");
         }
     }
 
     @EventHandler
     public void onHangingBreakByEntityEvent(HangingBreakByEntityEvent e) {
-        if (e.getRemover() instanceof Player) {
-            Player pl = (Player) e.getRemover();
-            String w = e.getEntity().getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            String msg = MessageManager.get().getMessage("specDamageFailed");
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp == null) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-            }
+        Entity en = e.getRemover();
+        if (en instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e, "specDamageFailed");
         }
     }
 
@@ -403,10 +185,11 @@ public class CheckListener implements Listener {
             e.setCancelled(true);
             return;
         }
+
         PlayerType type = wp.getType();
         if (!wi.isJoinIfOwnerOnline()) {
             if (type == PlayerType.SPECTATOR) {
-                if (!(e.getMessage().equalsIgnoreCase("/spawn") || e.getMessage().equalsIgnoreCase("/back") || e.getMessage().indexOf("/home") == 0 || e.getMessage().indexOf("/wol") == 0 || e.getMessage().indexOf("/worldlist") == 0)) {
+                if (isIllegalCommand(e.getMessage())) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
                 }
@@ -415,7 +198,7 @@ public class CheckListener implements Listener {
         else {
             if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    if (!(e.getMessage().equalsIgnoreCase("/spawn") || e.getMessage().equalsIgnoreCase("/back") || e.getMessage().indexOf("/home") == 0 || e.getMessage().indexOf("/wol") == 0 || e.getMessage().indexOf("/worldlist") == 0)) {
+                    if (isIllegalCommand(e.getMessage())) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);
                     }
@@ -423,7 +206,7 @@ public class CheckListener implements Listener {
             }
             else {
                 if (type == PlayerType.SPECTATOR) {
-                    if (!(e.getMessage().equalsIgnoreCase("/spawn") || e.getMessage().equalsIgnoreCase("/back") || e.getMessage().indexOf("/home") == 0 || e.getMessage().indexOf("/wol") == 0 || e.getMessage().indexOf("/worldlist") == 0)) {
+                    if (isIllegalCommand(e.getMessage())) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);
                     }
@@ -432,177 +215,76 @@ public class CheckListener implements Listener {
         }
     }
 
+    private static boolean isIllegalCommand(String message) {
+        String[] args = message.split(" ");
+        if (args.length < 1) {
+            return false;
+        }
+
+        if (args[0].equalsIgnoreCase("/spawn") || args[0].equalsIgnoreCase("/back") || args[0].equalsIgnoreCase("/wol") || args[0].equalsIgnoreCase("/worldlist")) {
+            return false;
+        }
+        return true;
+    }
+
     @EventHandler
     public void onInventoryClickEvent(InventoryClickEvent e) {
-        if (e.getWhoClicked() instanceof Player) {
-            Player pl = (Player) e.getWhoClicked();
-            String w = pl.getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp == null) {
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        e.setCancelled(true);
-                    }
-                }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
-                        e.setCancelled(true);
-                    }
-                }
-            }
+        HumanEntity en = e.getWhoClicked();
+        if (en instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e);
         }
     }
 
     @EventHandler
     public void onEntityPickupItemEvent(EntityPickupItemEvent e) {
-        if (e.getEntity() instanceof Player) {
-            Player pl = (Player) e.getEntity();
-            if (pl.hasMetadata("NPC")) {
-                return;
-            }
-            String w = pl.getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp == null) {
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        e.setCancelled(true);
-                    }
-                }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
-                        e.setCancelled(true);
-                    }
-                }
-            }
+        Entity en = e.getEntity();
+        if (en instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e);
         }
     }
 
     @EventHandler
     public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e) {
         Player pl = e.getPlayer();
-        if (pl.hasMetadata("NPC")) {
-            return;
-        }
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-        if (wi == null) {
-            return;
-        }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
-            return;
-        }
-        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        String msg = MessageManager.get().getMessage("specDamageFailed");
-        if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
-            e.setCancelled(true);
-            return;
-        }
-        PlayerType type = wp.getType();
-        if (!wi.isJoinIfOwnerOnline()) {
-            if (type == PlayerType.SPECTATOR) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-            }
-        }
-        else {
-            if (!WorldLister.checkOnline(wi)) {
-                if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-        }
+        checkProtection(pl, e, "specDamageFailed");
     }
 
     @EventHandler
     public void onVehicleDestroyEvent(VehicleDestroyEvent e) {
-        if (e.getAttacker() instanceof Player) {
-            Player pl = (Player) e.getAttacker();
-            String w = pl.getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            String msg = MessageManager.get().getMessage("specDamageFailed");
-            if (wp == null) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
-                    }
-                }
-            }
+        Entity en = e.getAttacker();
+        if (en instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e, "specDamageFailed");
         }
     }
 
     @EventHandler
     public void onHangingPlaceEvent(HangingPlaceEvent e) {
         Player pl = e.getPlayer();
-        String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
+        checkProtection(pl, e, "specPlaceFailed");
+    }
+
+    @EventHandler
+    public void onHangingBreakEvent(HangingBreakByEntityEvent e) {
+        Entity en = e.getRemover();
+        if (en instanceof Player) {
+            Player pl = (Player) en;
+            checkProtection(pl, e, "specBreakFailed");
+        }
+    }
+
+    private static void checkProtection(Player pl, Cancellable e) {
+        checkProtection(pl, e, null);
+    }
+
+    private static void checkProtection(Player pl, Cancellable e, String cancelMessage) {
+        if (pl.hasMetadata("NPC")) {
+            return;
+        }
+        String worldName = pl.getLocation().getWorld().getName();
+        WorldInfo wi = WorldLister.getInstance().getWorldInfo(worldName);
         if (wi == null) {
             return;
         }
@@ -610,72 +292,45 @@ public class CheckListener implements Listener {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-        String msg = MessageManager.get().getMessage("specPlaceFailed");
+        String msg = cancelMessage;
+        if (msg != null) {
+            msg = MessageManager.get().getMessage(msg);
+        }
+
         if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
             e.setCancelled(true);
+
+            if (msg != null) {
+                pl.sendMessage(msg.replace("&", "\u00a7"));
+            }
             return;
         }
         PlayerType type = wp.getType();
         if (!wi.isJoinIfOwnerOnline()) {
             if (type == PlayerType.SPECTATOR) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
                 e.setCancelled(true);
+
+                if (msg != null) {
+                    pl.sendMessage(msg.replace("&", "\u00a7"));
+                }
             }
         }
         else {
             if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
-                }
-            }
-            else {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-        }
-    }
 
-    @EventHandler
-    public void onHangingBreakEvent(HangingBreakByEntityEvent e) {
-        if (e.getRemover() instanceof Player) {
-            Player pl = (Player) e.getRemover();
-            String w = pl.getLocation().getWorld().getName();
-            WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
-            if (wi == null) {
-                return;
-            }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
-            }
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            String msg = MessageManager.get().getMessage("specBreakFailed");
-            if (wp == null) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
-                e.setCancelled(true);
-                return;
-            }
-            PlayerType type = wp.getType();
-            if (!wi.isJoinIfOwnerOnline()) {
-                if (type == PlayerType.SPECTATOR) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
-                    e.setCancelled(true);
-                }
-            }
-            else {
-                if (!WorldLister.checkOnline(wi)) {
-                    if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
+                    if (msg != null) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
                     }
                 }
-                else {
-                    if (type == PlayerType.SPECTATOR) {
+            }
+            else {
+                if (type == PlayerType.SPECTATOR) {
+                    e.setCancelled(true);
+
+                    if (msg != null) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
-                        e.setCancelled(true);
                     }
                 }
             }

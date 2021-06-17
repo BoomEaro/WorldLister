@@ -97,15 +97,13 @@ public class Commands implements CommandExecutor, TabCompleter {
                             msg4 += list4[i] + (i != len4 - 1 ? ChatColor.WHITE + ", " : "");
                         }
 
-                        boolean advmode = wi.isJoinIfOwnerOnline();
-                        String joinmode = wi.getAcess().toString().toLowerCase();
                         sender.sendMessage(ChatColor.GOLD + "Список игроков и групп:");
                         sender.sendMessage("Владельцы " + ChatColor.GOLD + "(" + len3 + ")" + ChatColor.WHITE + ": " + msg3);
                         sender.sendMessage("Модераторы: " + ChatColor.GOLD + "(" + len2 + ")" + ChatColor.WHITE + ": " + msg2);
                         sender.sendMessage("Участники: " + ChatColor.GOLD + "(" + len + ")" + ChatColor.WHITE + ": " + msg);
                         sender.sendMessage("Наблюдатели: " + ChatColor.GOLD + "(" + len4 + ")" + ChatColor.WHITE + ": " + msg4);
-                        sender.sendMessage("Улучшенный режим: " + (advmode ? ChatColor.GREEN + "Активирован" : ChatColor.RED + "Деактивирован"));
-                        sender.sendMessage("Режим входа: " + joinmode.replace("access", ChatColor.RED + "Закрытый").replace("public", ChatColor.GREEN + "Публичный"));
+                        sender.sendMessage("Улучшенный режим: " + (wi.isJoinIfOwnerOnline() ? ChatColor.GREEN + "Активирован" : ChatColor.RED + "Деактивирован"));
+                        sender.sendMessage("Режим входа: " + wi.getAcess().getName());
                     }
                     else {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr").replace("&", "\u00a7"));
@@ -116,7 +114,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.GOLD + "Список миров и уровень доступа:");
                     for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        String access = wi.getAcess().toString().toLowerCase().replace("access", "&cЗакрытый").replace("public", "&aПубличный");
+                        String access = wi.getAcess().getName();
                         if (wp != null) {
                             if (wp.getType() == PlayerType.SPECTATOR) {
                                 msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&7Наблюдатель &f(" + access + "&f)";
@@ -579,13 +577,13 @@ public class Commands implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
-        if (arg0 instanceof Player) {
-            Player pl = (Player) arg0;
-            if (arg3.length == 1) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String arg, String[] args) {
+        if (sender instanceof Player) {
+            Player pl = (Player) sender;
+            if (args.length == 1) {
                 List<String> ss = new ArrayList<String>(Arrays.asList("spawn", "set", "addplayer", "player", "removeplayer", "access", "list", "players", "setspawn", "advmode", "accessmode"));
                 List<String> matches = new ArrayList<>();
-                String search = arg3[0].toLowerCase();
+                String search = args[0].toLowerCase();
                 for (String s : ss) {
                     if (s.toLowerCase().startsWith(search)) {
                         matches.add(s);
@@ -593,8 +591,8 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 return matches;
             }
-            if (arg3.length == 2) {
-                if (arg3[0].equalsIgnoreCase("spawn")) {
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("spawn")) {
                     List<String> acceptedWorlds = new ArrayList<>();
                     for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
                         if (wi.getAcess() == WorldAccess.PUBLIC) {
@@ -610,7 +608,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                     }
                     List<String> matches = new ArrayList<>();
-                    String search = arg3[1].toLowerCase();
+                    String search = args[1].toLowerCase();
                     for (String world : acceptedWorlds) {
                         if (world.toLowerCase().startsWith(search)) {
                             matches.add(world);
@@ -619,7 +617,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     return matches;
 
                 }
-                else if (arg3[0].equalsIgnoreCase("addplayer")) {
+                else if (args[0].equalsIgnoreCase("addplayer")) {
                     String plw = pl.getWorld().getName();
                     WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
                     if (wi != null) {
@@ -637,7 +635,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                             }
                         }
                         List<String> matches = new ArrayList<>();
-                        String search = arg3[1].toLowerCase();
+                        String search = args[1].toLowerCase();
                         for (String player : notAdded) {
                             if (player.toLowerCase().startsWith(search)) {
                                 matches.add(player);
@@ -646,7 +644,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return matches;
                     }
                 }
-                else if (arg3[0].equalsIgnoreCase("removeplayer") || arg3[0].equalsIgnoreCase("set") || arg3[0].equalsIgnoreCase("player")) {
+                else if (args[0].equalsIgnoreCase("removeplayer") || args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("player")) {
                     String plw = pl.getWorld().getName();
                     WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
                     if (wi != null) {
@@ -659,7 +657,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                         List<String> ss = new ArrayList<String>(wi.getAllWorldPlayersString());
                         List<String> matches = new ArrayList<>();
-                        String search = arg3[1].toLowerCase();
+                        String search = args[1].toLowerCase();
                         for (String player : ss) {
                             if (player.toLowerCase().startsWith(search)) {
                                 matches.add(player);
@@ -668,7 +666,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return matches;
                     }
                 }
-                else if (arg3[0].equalsIgnoreCase("accessmode")) {
+                else if (args[0].equalsIgnoreCase("accessmode")) {
                     String plw = pl.getWorld().getName();
                     WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
                     if (wi != null) {
@@ -681,7 +679,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         }
                         List<String> ss = new ArrayList<String>(Arrays.asList("public", "access"));
                         List<String> matches = new ArrayList<>();
-                        String search = arg3[1].toLowerCase();
+                        String search = args[1].toLowerCase();
                         for (String player : ss) {
                             if (player.toLowerCase().startsWith(search)) {
                                 matches.add(player);
@@ -691,8 +689,8 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
             }
-            if (arg3.length == 3) {
-                if (arg3[0].equalsIgnoreCase("set")) {
+            if (args.length == 3) {
+                if (args[0].equalsIgnoreCase("set")) {
                     String plw = pl.getWorld().getName();
                     WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
                     if (wi != null) {
@@ -711,7 +709,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                             return empty;
                         }
                         List<String> matches = new ArrayList<>();
-                        String search = arg3[2].toLowerCase();
+                        String search = args[2].toLowerCase();
                         for (String player : ss) {
                             if (player.toLowerCase().startsWith(search)) {
                                 matches.add(player);
@@ -723,10 +721,10 @@ public class Commands implements CommandExecutor, TabCompleter {
             }
         }
         else {
-            if (arg3.length == 1) {
+            if (args.length == 1) {
                 List<String> ss = new ArrayList<String>(Arrays.asList("addowner", "removeowner", "players"));
                 List<String> matches = new ArrayList<>();
-                String search = arg3[0].toLowerCase();
+                String search = args[0].toLowerCase();
                 for (String s : ss) {
                     if (s.toLowerCase().startsWith(search)) {
                         matches.add(s);
@@ -734,14 +732,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 return matches;
             }
-            if (arg3.length == 2) {
-                if (arg3[0].equalsIgnoreCase("addowner") || arg3[0].equalsIgnoreCase("removeowner")) {
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("addowner") || args[0].equalsIgnoreCase("removeowner")) {
                     List<String> worlds = new ArrayList<String>();
                     for (World w : Bukkit.getWorlds()) {
                         worlds.add(w.getName());
                     }
                     List<String> matches = new ArrayList<>();
-                    String search = arg3[1].toLowerCase();
+                    String search = args[1].toLowerCase();
                     for (String player : worlds) {
                         if (player.toLowerCase().startsWith(search)) {
                             matches.add(player);
@@ -750,14 +748,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                     return matches;
                 }
             }
-            if (arg3.length == 3) {
-                if (arg3[0].equalsIgnoreCase("addowner")) {
+            if (args.length == 3) {
+                if (args[0].equalsIgnoreCase("addowner")) {
                     List<String> players = new ArrayList<String>();
                     for (Player pl : Bukkit.getOnlinePlayers()) {
                         players.add(pl.getName());
                     }
                     List<String> matches = new ArrayList<>();
-                    String search = arg3[2].toLowerCase();
+                    String search = args[2].toLowerCase();
                     for (String player : players) {
                         if (player.toLowerCase().startsWith(search)) {
                             matches.add(player);
@@ -765,14 +763,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                     return matches;
                 }
-                else if (arg3[0].equalsIgnoreCase("removeowner")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(arg3[1]);
+                else if (args[0].equalsIgnoreCase("removeowner")) {
+                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(args[1]);
                     if (wi == null) {
                         return empty;
                     }
                     List<String> players = new ArrayList<String>(wi.getAllWorldPlayersString());
                     List<String> matches = new ArrayList<>();
-                    String search = arg3[2].toLowerCase();
+                    String search = args[2].toLowerCase();
                     for (String player : players) {
                         if (player.toLowerCase().startsWith(search)) {
                             matches.add(player);

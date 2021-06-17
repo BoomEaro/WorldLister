@@ -51,7 +51,7 @@ public class WorldLister extends JavaPlugin implements Listener {
 
         loadWorlds();
 
-        checkPlayerAccess();
+        checkPlayersAccess();
 
         getLogger().info("Плагин успешно запущен.");
     }
@@ -128,23 +128,24 @@ public class WorldLister extends JavaPlugin implements Listener {
         pl.chat("//none");
     }
 
-    public void checkPlayerAccess() {
+    private void checkPlayersAccess() {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             String w = pl.getLocation().getWorld().getName();
             WorldInfo wi = this.worlds.get(w);
             if (wi == null) {
-                return;
+                continue;
             }
             if (wi.getAcess() == WorldAccess.PUBLIC) {
-                return;
+                continue;
             }
             String msg = MessageManager.get().getMessage("joinPerms");
             WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp == null) {
-                pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-                pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
-                return;
+            if (wp != null) {
+                continue;
             }
+
+            pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
+            pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
         }
     }
 
