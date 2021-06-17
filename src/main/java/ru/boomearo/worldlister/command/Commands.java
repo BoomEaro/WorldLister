@@ -31,7 +31,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     private static final List<String> empty = new ArrayList<>();
 
-    public boolean onCommand(CommandSender sender, Command worldlist, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player pl = (Player) sender;
             if (!(pl.hasPermission("worldlist.commands"))) {
@@ -379,7 +379,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 if (wpa != null) {
                                     sender.sendMessage("Ник: " + wpa.getName());
                                     sender.sendMessage("Мир: " + wi.getName());
-                                    sender.sendMessage("Тип: " + wpa.getType());
+                                    sender.sendMessage("Тип: " + wpa.getType().getName());
                                     sender.sendMessage("Кем добавлен: " + wpa.getWhoAdd());
                                     sender.sendMessage("Был добавлен: " + (DateUtil.formatedTime(System.currentTimeMillis() - wpa.getTimeAdded(), true)) + "назад.");
                                 }
@@ -581,17 +581,16 @@ public class Commands implements CommandExecutor, TabCompleter {
         if (sender instanceof Player) {
             Player pl = (Player) sender;
             if (args.length == 1) {
-                List<String> ss = new ArrayList<String>(Arrays.asList("spawn", "set", "addplayer", "player", "removeplayer", "access", "list", "players", "setspawn", "advmode", "accessmode"));
                 List<String> matches = new ArrayList<>();
                 String search = args[0].toLowerCase();
-                for (String s : ss) {
+                for (String s : Arrays.asList("spawn", "set", "addplayer", "player", "removeplayer", "access", "list", "players", "setspawn", "advmode", "accessmode")) {
                     if (s.toLowerCase().startsWith(search)) {
                         matches.add(s);
                     }
                 }
                 return matches;
             }
-            if (args.length == 2) {
+            else if (args.length == 2) {
                 if (args[0].equalsIgnoreCase("spawn")) {
                     List<String> acceptedWorlds = new ArrayList<>();
                     for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
@@ -689,7 +688,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
             }
-            if (args.length == 3) {
+            else if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("set")) {
                     String plw = pl.getWorld().getName();
                     WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
@@ -732,7 +731,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 return matches;
             }
-            if (args.length == 2) {
+            else if (args.length == 2) {
                 if (args[0].equalsIgnoreCase("addowner") || args[0].equalsIgnoreCase("removeowner")) {
                     List<String> worlds = new ArrayList<String>();
                     for (World w : Bukkit.getWorlds()) {
@@ -748,7 +747,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     return matches;
                 }
             }
-            if (args.length == 3) {
+            else if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("addowner")) {
                     List<String> players = new ArrayList<String>();
                     for (Player pl : Bukkit.getOnlinePlayers()) {

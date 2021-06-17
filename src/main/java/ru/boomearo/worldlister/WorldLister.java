@@ -145,7 +145,7 @@ public class WorldLister extends JavaPlugin implements Listener {
             }
 
             pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-            pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
+            pl.sendMessage(msg.replace("%WORLD%", w));
         }
     }
 
