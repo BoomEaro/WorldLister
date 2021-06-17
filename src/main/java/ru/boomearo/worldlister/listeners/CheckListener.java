@@ -56,7 +56,7 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("teleportPerms");
         if (wp == null) {
-            pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
+            pl.sendMessage(msg.replace("%WORLD%", w));
             e.setCancelled(true);
             return;
         }
@@ -90,7 +90,7 @@ public class CheckListener implements Listener {
         String msg = MessageManager.get().getMessage("joinPerms");
         if (wp == null) {
             pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-            pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
+            pl.sendMessage(msg.replace("%WORLD%", w));
         }
     }
 
@@ -114,7 +114,7 @@ public class CheckListener implements Listener {
                         if (playerOnline.size() <= 1) {
                             for (Player ppp : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                 String info1 = "&cПоследний владелец " + pl.getName() + " мира '" + wi.getName() + "' покинул сервер. Теперь у вас отсутствует доступ к модификации этого мира.";
-                                ppp.sendMessage(info1.replace("&", "\u00a7"));
+                                ppp.sendMessage(info1);
                             }
                         }
                     }
@@ -181,7 +181,7 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("specCommandFailed");
         if (wp == null) {
-            pl.sendMessage(msg.replace("&", "\u00a7"));
+            pl.sendMessage(msg);
             e.setCancelled(true);
             return;
         }
@@ -190,7 +190,7 @@ public class CheckListener implements Listener {
         if (!wi.isJoinIfOwnerOnline()) {
             if (type == PlayerType.SPECTATOR) {
                 if (isIllegalCommand(e.getMessage())) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
+                    pl.sendMessage(msg);
                     e.setCancelled(true);
                 }
             }
@@ -199,7 +199,7 @@ public class CheckListener implements Listener {
             if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     if (isIllegalCommand(e.getMessage())) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
+                        pl.sendMessage(msg);
                         e.setCancelled(true);
                     }
                 }
@@ -207,7 +207,7 @@ public class CheckListener implements Listener {
             else {
                 if (type == PlayerType.SPECTATOR) {
                     if (isIllegalCommand(e.getMessage())) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
+                        pl.sendMessage(msg);
                         e.setCancelled(true);
                     }
                 }
@@ -301,7 +301,7 @@ public class CheckListener implements Listener {
             e.setCancelled(true);
 
             if (msg != null) {
-                pl.sendMessage(msg.replace("&", "\u00a7"));
+                pl.sendMessage(msg);
             }
             return;
         }
@@ -311,7 +311,7 @@ public class CheckListener implements Listener {
                 e.setCancelled(true);
 
                 if (msg != null) {
-                    pl.sendMessage(msg.replace("&", "\u00a7"));
+                    pl.sendMessage(msg);
                 }
             }
         }
@@ -321,7 +321,7 @@ public class CheckListener implements Listener {
                     e.setCancelled(true);
 
                     if (msg != null) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
+                        pl.sendMessage(msg);
                     }
                 }
             }
@@ -330,7 +330,7 @@ public class CheckListener implements Listener {
                     e.setCancelled(true);
 
                     if (msg != null) {
-                        pl.sendMessage(msg.replace("&", "\u00a7"));
+                        pl.sendMessage(msg);
                     }
                 }
             }

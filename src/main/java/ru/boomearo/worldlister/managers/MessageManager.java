@@ -2,6 +2,7 @@ package ru.boomearo.worldlister.managers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -59,10 +60,15 @@ public class MessageManager {
         if (section != null) {
             for (String messages : section.getKeys(false)) {
                 if (!section.isList(messages)) {
-                    tmpMsgs.put(messages, section.getString(messages));
+                    tmpMsgs.put(messages, section.getString(messages).replace("&", "§"));
                 }
                 else {
-                    tmpMsgsList.put(messages, section.getStringList(messages));
+                    List<String> originalList = section.getStringList(messages);
+                    List<String> tmp = new ArrayList<>();
+                    for (String tmpMsg : originalList) {
+                        tmp.add(tmpMsg.replace("&", "§"));
+                    }
+                    tmpMsgsList.put(messages, Collections.unmodifiableList(tmp));
                 }
             }
         }
