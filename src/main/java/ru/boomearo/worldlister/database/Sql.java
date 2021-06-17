@@ -18,16 +18,18 @@ import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 
 public class Sql {
+
     private static Sql instance = null;
     private static final String CON_STR = "jdbc:sqlite:[path]database.db";
 
     public static synchronized Sql getInstance() throws SQLException {
-        if (instance == null)
+        if (instance == null) {
             instance = new Sql();
+        }
         return instance;
     }
 
-    private Connection connection;
+    private final Connection connection;
 
     private Sql() throws SQLException {
         DriverManager.registerDriver(new JDBC());
@@ -50,8 +52,10 @@ public class Sql {
     }
 
     public synchronized SectionWorld getDataSettings(String name) {
-        try (Statement statement = this.connection.createStatement()) {
-            ResultSet resSet = statement.executeQuery("SELECT id, joinIf, access FROM settings WHERE world = '" + name + "' LIMIT 1");
+        try (PreparedStatement statement = this.connection.prepareStatement("SELECT id, joinIf, access FROM settings WHERE world = ? LIMIT 1")) {
+            statement.setString(1, name);
+
+            ResultSet resSet = statement.executeQuery();
 
             if (resSet.next()) {
                 return new SectionWorld(resSet.getInt("id"), name, resSet.getBoolean("joinIf"), resSet.getString("access"));
@@ -61,17 +65,6 @@ public class Sql {
         catch (SQLException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-
-    public synchronized boolean eraseAllSettings() {
-        try (Statement statement = this.connection.createStatement()) {
-            return statement.execute("DELETE FROM settings");
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
@@ -89,13 +82,14 @@ public class Sql {
         }
     }
 
-    public synchronized boolean removeSettings(String name) {
-        try (Statement statement = this.connection.createStatement()) {
-            return statement.execute("DELETE FROM settings WHERE world = '" + name + "'");
+    public synchronized void removeSettings(String name) {
+        try (PreparedStatement statement = this.connection.prepareStatement("DELETE FROM settings WHERE world = ?")) {
+            statement.setString(1, name);
+
+            statement.executeUpdate();
         }
         catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -116,7 +110,7 @@ public class Sql {
         }
     }
 
-
+    //TODO потенциальная иньекция
     public synchronized List<SectionWorldPlayer> getAllDataWorldPlayer(String worldName) {
         try (Statement statement = this.connection.createStatement()) {
             List<SectionWorldPlayer> collections = new ArrayList<SectionWorldPlayer>();
@@ -129,32 +123,6 @@ public class Sql {
         catch (SQLException e) {
             e.printStackTrace();
             return Collections.emptyList();
-        }
-    }
-
-    public synchronized SectionWorldPlayer getDataWorldPlayer(String worldName, String name) {
-        try (Statement statement = this.connection.createStatement()) {
-            ResultSet resSet = statement.executeQuery("SELECT id, type, timeAdded, whoAdd FROM '" + worldName + "' WHERE name = '" + name + "' LIMIT 1");
-
-            if (resSet.next()) {
-                return new SectionWorldPlayer(resSet.getInt("id"), name, resSet.getString("type"), resSet.getLong("timeAdded"), resSet.getString("whoAdd"));
-            }
-            return null;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    public synchronized boolean eraseAllWorldPlayer(String worldName) {
-        try (Statement statement = this.connection.createStatement()) {
-            return statement.execute("DELETE FROM '" + worldName + "'");
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
@@ -173,13 +141,14 @@ public class Sql {
         }
     }
 
-    public synchronized boolean removeWorldPlayer(String worldName, String name) {
-        try (Statement statement = this.connection.createStatement()) {
-            return statement.execute("DELETE FROM '" + worldName + "' WHERE name = '" + name + "'");
+    public synchronized void removeWorldPlayer(String worldName, String name) {
+        try (PreparedStatement statement = this.connection.prepareStatement("DELETE FROM '" + worldName + "' WHERE name = ?")) {
+            statement.setString(1, name);
+
+            statement.executeUpdate();
         }
         catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -240,7 +209,7 @@ public class Sql {
     }
 
 
-    public synchronized void Disconnect() throws SQLException {
+    public synchronized void disconnect() throws SQLException {
         this.connection.close();
     }
 }

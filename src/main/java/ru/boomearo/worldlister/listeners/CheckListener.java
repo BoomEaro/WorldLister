@@ -160,7 +160,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
@@ -202,7 +202,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
@@ -243,7 +243,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
@@ -282,7 +282,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     e.setCancelled(true);
                 }
@@ -326,7 +326,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);
@@ -369,7 +369,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);
@@ -413,7 +413,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     if (!(e.getMessage().equalsIgnoreCase("/spawn") || e.getMessage().equalsIgnoreCase("/back") || e.getMessage().indexOf("/home") == 0 || e.getMessage().indexOf("/wol") == 0 || e.getMessage().indexOf("/worldlist") == 0)) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
@@ -456,7 +456,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         e.setCancelled(true);
                     }
@@ -497,7 +497,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         e.setCancelled(true);
                     }
@@ -540,7 +540,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
@@ -582,7 +582,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);
@@ -624,7 +624,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnlines(wi)) {
+            if (!WorldLister.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     pl.sendMessage(msg.replace("&", "\u00a7"));
                     e.setCancelled(true);
@@ -666,7 +666,7 @@ public class CheckListener implements Listener {
                 }
             }
             else {
-                if (!WorldLister.checkOnlines(wi)) {
+                if (!WorldLister.checkOnline(wi)) {
                     if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                         pl.sendMessage(msg.replace("&", "\u00a7"));
                         e.setCancelled(true);

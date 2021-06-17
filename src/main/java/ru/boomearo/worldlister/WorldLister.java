@@ -35,11 +35,6 @@ public class WorldLister extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
 
-        getServer().getPluginManager().registerEvents(new CheckListener(), this);
-        getServer().getPluginManager().registerEvents(new WorldListener(), this);
-
-        getCommand("worldlist").setExecutor(new Commands());
-
         File configFile = new File(getDataFolder() + File.separator + "config.yml");
         if (!configFile.exists()) {
             getLogger().info("Конфиг не найден, создаю новый..");
@@ -49,14 +44,14 @@ public class WorldLister extends JavaPlugin implements Listener {
         MessageManager.get().loadMessages();
         loadDataBase();
 
-        try {
-            loadWorlds();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+        getServer().getPluginManager().registerEvents(new CheckListener(), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(), this);
 
-        checkPlayerAccessThenKick();
+        getCommand("worldlist").setExecutor(new Commands());
+
+        loadWorlds();
+
+        checkPlayerAccess();
 
         getLogger().info("Плагин успешно запущен.");
     }
@@ -65,7 +60,7 @@ public class WorldLister extends JavaPlugin implements Listener {
     public void onDisable() {
         try {
             getLogger().info("Отключаюсь от базы данных");
-            Sql.getInstance().Disconnect();
+            Sql.getInstance().disconnect();
             getLogger().info("Успешно отключился от базы данных");
         }
         catch (SQLException e1) {
@@ -93,26 +88,30 @@ public class WorldLister extends JavaPlugin implements Listener {
         }
     }
 
-    public void loadWorlds() throws SQLException {
-        for (World w : Bukkit.getWorlds()) {
-            SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
-            if (sw != null) {
-                this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
+    public void loadWorlds()  {
+        try {
+            for (World w : Bukkit.getWorlds()) {
+                SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
+                if (sw != null) {
+                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
+                }
+                else {
+                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
+                    new PutSettingsThread(w.getName(), false, "PUBLIC");
+                }
             }
-            else {
-                this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
-                new PutSettingsThread(w.getName(), false, "PUBLIC");
+            for (WorldInfo wi : this.worlds.values()) {
+                for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName())) {
+                    wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
+                }
             }
         }
-        for (WorldInfo wi : this.worlds.values()) {
-            for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName())) {
-                wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
-            }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-
-    public static boolean checkOnlines(WorldInfo wi) {
+    public static boolean checkOnline(WorldInfo wi) {
         for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
             if (wpa.getType() == PlayerType.OWNER) {
                 if (getPlayerRight(wpa.getName()) != null) {
@@ -129,8 +128,7 @@ public class WorldLister extends JavaPlugin implements Listener {
         pl.chat("//none");
     }
 
-
-    public void checkPlayerAccessThenKick() {
+    public void checkPlayerAccess() {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             String w = pl.getLocation().getWorld().getName();
             WorldInfo wi = this.worlds.get(w);
