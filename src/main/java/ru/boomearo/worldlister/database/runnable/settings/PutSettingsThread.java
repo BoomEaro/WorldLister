@@ -8,29 +8,30 @@ import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
 
 public class PutSettingsThread extends BukkitRunnable {
-	private String worldName;
-	private boolean isJoin;
-	private String access;
-	public PutSettingsThread(String worldName, boolean isJoin, String access) {
-		this.worldName = worldName;
-		this.isJoin = isJoin;
-		this.access = access;
-		runnable();
-	}
-	
-	private void runnable() {
-		this.runTaskAsynchronously(WorldLister.getContext());
-	}
-	
+    private final String worldName;
+    private final boolean isJoin;
+    private final String access;
 
-	@Override
-	public void run() {
-		try {
-			Sql.getInstance().putSettings(worldName, isJoin, access);
-		} 
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+    public PutSettingsThread(String worldName, boolean isJoin, String access) {
+        this.worldName = worldName;
+        this.isJoin = isJoin;
+        this.access = access;
+        runnable();
+    }
+
+    private void runnable() {
+        this.runTaskAsynchronously(WorldLister.getInstance());
+    }
+
+
+    @Override
+    public void run() {
+        try {
+            Sql.getInstance().putSettings(worldName, isJoin, access);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

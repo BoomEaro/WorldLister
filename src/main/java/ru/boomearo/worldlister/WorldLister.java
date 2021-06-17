@@ -26,147 +26,154 @@ import ru.boomearo.worldlister.objects.WorldInfo;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class WorldLister extends JavaPlugin implements Listener {
-	
-	private volatile ConcurrentMap<String, WorldInfo> worlds = new ConcurrentHashMap<String, WorldInfo>();
-	
-	public void onEnable() {
-		instance = this;
-		
-	    getServer().getPluginManager().registerEvents(new CheckListener(), this);
-	    getServer().getPluginManager().registerEvents(new WorldListener(), this);
-	    
-	    getCommand("worldlist").setExecutor(new Commands());
-	    
-	    File configFile = new File(getDataFolder() + File.separator + "config.yml");
-	    if (!configFile.exists()) {
-	       getLogger().info("Конфиг не найден, создаю новый..");
-	       saveDefaultConfig();
-		}
-	    
-	    MessageManager.get().loadMessages();
-	    loadDataBase();
-	    
-	    try {
-			loadWorlds();
-		}
-	    catch (SQLException e) {
-			e.printStackTrace();
-		}
-	    
-	    checkPlayerAccessThenKick();
-	    
-	    getLogger().info("Плагин успешно запущен.");
-	}
-	public void onDisable() {
-		try {
-			getLogger().info("Отключаюсь от базы данных");
-			Sql.getInstance().Disconnect();
-			getLogger().info("Успешно отключился от базы данных");
-		} 
-		catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		getLogger().info("Плагин успешно выключился.");
-	}
-	
-	private static WorldLister instance = null;
-	public static WorldLister getContext() { 
-		if (instance != null) return instance; return null; 
-	}
-	
-	public void loadDataBase() {
+
+    private final ConcurrentMap<String, WorldInfo> worlds = new ConcurrentHashMap<String, WorldInfo>();
+
+    private static WorldLister instance = null;
+
+    @Override
+    public void onEnable() {
+        instance = this;
+
+        getServer().getPluginManager().registerEvents(new CheckListener(), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(), this);
+
+        getCommand("worldlist").setExecutor(new Commands());
+
+        File configFile = new File(getDataFolder() + File.separator + "config.yml");
+        if (!configFile.exists()) {
+            getLogger().info("Конфиг не найден, создаю новый..");
+            saveDefaultConfig();
+        }
+
+        MessageManager.get().loadMessages();
+        loadDataBase();
+
+        try {
+            loadWorlds();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        checkPlayerAccessThenKick();
+
+        getLogger().info("Плагин успешно запущен.");
+    }
+
+    @Override
+    public void onDisable() {
+        try {
+            getLogger().info("Отключаюсь от базы данных");
+            Sql.getInstance().Disconnect();
+            getLogger().info("Успешно отключился от базы данных");
+        }
+        catch (SQLException e1) {
+            e1.printStackTrace();
+        }
+        getLogger().info("Плагин успешно выключился.");
+    }
+
+    public static WorldLister getInstance() {
+        return instance;
+    }
+
+    public void loadDataBase() {
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();
-        } 
-		try {
-			for (World w : Bukkit.getWorlds()) {
-				Sql.getInstance().createNewDatabaseWorld(w.getName());
-			}
-			Sql.getInstance().createNewDatabaseSettings();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void loadWorlds() throws SQLException {
-		for (World w : Bukkit.getWorlds()) {
-			SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
-			if (sw != null) {
-				this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
-			}
-			else {
-				this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
-			    new PutSettingsThread(w.getName(), false, "PUBLIC");
-			}
-		}
-		for (WorldInfo wi : this.worlds.values()) {
-			for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName())) {
-				wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
-			}
-		}
-	}
-	
-	
-	public static boolean checkOnlines(WorldInfo wi) {
-		for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
-			if (wpa.getType() == PlayerType.OWNER) {
-				if (getPlayerRight(wpa.getName()) != null) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	
-	public static void tpWorldClear(Player pl) {
-		pl.getInventory().clear();
-		pl.chat("//none");
-	}
-	
-	
-	public void checkPlayerAccessThenKick() {
-	    for (Player pl : Bukkit.getOnlinePlayers()) {
-			String w = pl.getLocation().getWorld().getName();
-			WorldInfo wi = this.worlds.get(w);
-			if (wi == null) {
-				return;
-			}
-			if (wi.getAcess() == WorldAccess.PUBLIC) {
-				return;
-			}
-			String msg = MessageManager.get().getMessage("joinPerms");
-			WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-			if (wp == null) {
-				pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-				pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
-				return;
-			}
-	    }
-	}
-	
-	
-	public static Player getPlayerRight(String name) {
-		for (Player pl : Bukkit.getOnlinePlayers()) {
-			if (pl.getName().equals(name)) {
-				return pl;
-			}
-		}
-		return null;
-	}
-	
-	public WorldInfo getWorldInfo(String world) {
-		return this.worlds.get(world);
-	}
-	
-	public Collection<WorldInfo> getAllWorlds() {
-		return this.worlds.values();
-	}
-	public void addWorldInfo(WorldInfo world) {
-		this.worlds.put(world.getName(), world);
-	}
-	public void removeWorldInfo(String world) {
-		this.worlds.remove(world);
-	}
-	
+        }
+        try {
+            for (World w : Bukkit.getWorlds()) {
+                Sql.getInstance().createNewDatabaseWorld(w.getName());
+            }
+            Sql.getInstance().createNewDatabaseSettings();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadWorlds() throws SQLException {
+        for (World w : Bukkit.getWorlds()) {
+            SectionWorld sw = Sql.getInstance().getDataSettings(w.getName());
+            if (sw != null) {
+                this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
+            }
+            else {
+                this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
+                new PutSettingsThread(w.getName(), false, "PUBLIC");
+            }
+        }
+        for (WorldInfo wi : this.worlds.values()) {
+            for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName())) {
+                wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
+            }
+        }
+    }
+
+
+    public static boolean checkOnlines(WorldInfo wi) {
+        for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
+            if (wpa.getType() == PlayerType.OWNER) {
+                if (getPlayerRight(wpa.getName()) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    public static void tpWorldClear(Player pl) {
+        pl.getInventory().clear();
+        pl.chat("//none");
+    }
+
+
+    public void checkPlayerAccessThenKick() {
+        for (Player pl : Bukkit.getOnlinePlayers()) {
+            String w = pl.getLocation().getWorld().getName();
+            WorldInfo wi = this.worlds.get(w);
+            if (wi == null) {
+                return;
+            }
+            if (wi.getAcess() == WorldAccess.PUBLIC) {
+                return;
+            }
+            String msg = MessageManager.get().getMessage("joinPerms");
+            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
+            if (wp == null) {
+                pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
+                pl.sendMessage(msg.replace("%WORLD%", w).replace("&", "\u00a7"));
+                return;
+            }
+        }
+    }
+
+
+    public static Player getPlayerRight(String name) {
+        for (Player pl : Bukkit.getOnlinePlayers()) {
+            if (pl.getName().equals(name)) {
+                return pl;
+            }
+        }
+        return null;
+    }
+
+    public WorldInfo getWorldInfo(String world) {
+        return this.worlds.get(world);
+    }
+
+    public Collection<WorldInfo> getAllWorlds() {
+        return this.worlds.values();
+    }
+
+    public void addWorldInfo(WorldInfo world) {
+        this.worlds.put(world.getName(), world);
+    }
+
+    public void removeWorldInfo(String world) {
+        this.worlds.remove(world);
+    }
+
 }
