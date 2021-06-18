@@ -11,12 +11,15 @@ import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.WorldAccess;
+import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.WorldInfo;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class WorldListener implements Listener {
 
+
+    //Подгружает настройки мира если мир был подгружен во время работы сервера (например из-за плагинов на мульти миры)
+    //Все запросы будут в основном потоке, потому что миры и так подгружаются там же и всегда будет задержка.
     @EventHandler
     public void onWorldLoadEvent(WorldLoadEvent e) {
         World w = e.getWorld();
@@ -29,17 +32,17 @@ public class WorldListener implements Listener {
 
             SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
             if (sw != null) {
-                worldInfo = new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access));
+                worldInfo = new WorldInfo(w.getName(), sw.joinIf, sw.access);
                 WorldLister.getInstance().addWorldInfo(worldInfo);
             }
             else {
-                worldInfo = new WorldInfo(w.getName(), false, WorldAccess.PUBLIC);
+                worldInfo = new WorldInfo(w.getName(), false, WorldAccessType.PUBLIC);
                 WorldLister.getInstance().addWorldInfo(worldInfo);
 
-                Sql.getInstance().putSettings(w.getName(), false, "PUBLIC");
+                Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);
             }
             for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(w.getName()).get()) {
-                worldInfo.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
+                worldInfo.addWorldPlayer(new WorldPlayer(swp.name, swp.type, swp.timeAdd, swp.whoAdd));
             }
         }
         catch (Exception ex) {

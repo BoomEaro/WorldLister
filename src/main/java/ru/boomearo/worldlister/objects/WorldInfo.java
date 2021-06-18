@@ -12,9 +12,9 @@ public class WorldInfo {
     private final ConcurrentMap<String, WorldPlayer> players = new ConcurrentHashMap<String, WorldPlayer>();
 
     private boolean joinIfOwnerOnline;
-    private WorldAccess access;
+    private WorldAccessType access;
 
-    public WorldInfo(String name, boolean joinIfOwnerOnline, WorldAccess access) {
+    public WorldInfo(String name, boolean joinIfOwnerOnline, WorldAccessType access) {
         this.name = name;
         this.joinIfOwnerOnline = joinIfOwnerOnline;
         this.access = access;
@@ -48,7 +48,7 @@ public class WorldInfo {
         return this.joinIfOwnerOnline;
     }
 
-    public WorldAccess getAcess() {
+    public WorldAccessType getAcess() {
         return this.access;
     }
 
@@ -56,7 +56,7 @@ public class WorldInfo {
         this.joinIfOwnerOnline = b;
     }
 
-    public void setAccess(WorldAccess wa) {
+    public void setAccess(WorldAccessType wa) {
         this.access = wa;
     }
 

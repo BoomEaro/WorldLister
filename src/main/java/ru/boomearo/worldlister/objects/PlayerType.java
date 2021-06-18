@@ -1,6 +1,7 @@
 package ru.boomearo.worldlister.objects;
 
 public enum PlayerType {
+
     SPECTATOR("Наблюдатель"),
     MEMBER("Участник"),
     MODER("Модератор"),

@@ -1,12 +1,13 @@
 package ru.boomearo.worldlister.objects;
 
-public enum WorldAccess {
+public enum WorldAccessType {
+
     PUBLIC("Публичный"),
     ACCESS("Приватный");
 
     private final String name;
 
-    WorldAccess(String name) {
+    WorldAccessType(String name) {
         this.name = name;
     }
 

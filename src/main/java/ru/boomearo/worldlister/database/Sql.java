@@ -23,6 +23,8 @@ import ru.boomearo.bungeechatplus.utils.runnable.AdvThreadFactory;
 import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
+import ru.boomearo.worldlister.objects.PlayerType;
+import ru.boomearo.worldlister.objects.WorldAccessType;
 
 public class Sql {
 
@@ -66,25 +68,25 @@ public class Sql {
                 ResultSet resSet = statement.executeQuery();
 
                 if (resSet.next()) {
-                    return new SectionWorld(resSet.getInt("id"), name, resSet.getBoolean("joinIf"), resSet.getString("access"));
+                    return new SectionWorld(resSet.getInt("id"), name, resSet.getBoolean("joinIf"), WorldAccessType.valueOf(resSet.getString("access").toUpperCase()));
                 }
                 return null;
             }
-            catch (SQLException e) {
+            catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
         });
     }
 
-    public void putSettings(String name, boolean joinIf, String access) {
+    public void putSettings(String name, boolean joinIf, WorldAccessType access) {
         this.executor.execute(() -> {
             try (PreparedStatement statement = this.connection.prepareStatement(
                     "INSERT INTO settings(`world`, `joinIf`, `access`) " +
                             "VALUES(?, ?, ?)")) {
                 statement.setString(1, name);
                 statement.setBoolean(2, joinIf);
-                statement.setString(3, access);
+                statement.setString(3, access.name());
                 statement.execute();
             }
             catch (SQLException e) {
@@ -93,20 +95,7 @@ public class Sql {
         });
     }
 
-    public void removeSettings(String name) {
-        this.executor.execute(() -> {
-            try (PreparedStatement statement = this.connection.prepareStatement("DELETE FROM settings WHERE world = ?")) {
-                statement.setString(1, name);
-
-                statement.executeUpdate();
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public void updateSettings(String name, boolean joinIf, String access) {
+    public void updateSettings(String name, boolean joinIf, WorldAccessType access) {
         this.executor.execute(() -> {
             String sql = "UPDATE settings SET joinIf = ? , "
                     + "access = ? "
@@ -115,7 +104,7 @@ public class Sql {
             try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
 
                 pstmt.setBoolean(1, joinIf);
-                pstmt.setString(2, access);
+                pstmt.setString(2, access.name());
                 pstmt.setString(3, name);
                 pstmt.executeUpdate();
             }
@@ -125,18 +114,17 @@ public class Sql {
         });
     }
 
-    //TODO потенциальная иньекция
     public Future<List<SectionWorldPlayer>> getAllDataWorldPlayer(String worldName) {
         return this.executor.submit(() -> {
             try (Statement statement = this.connection.createStatement()) {
                 List<SectionWorldPlayer> collections = new ArrayList<SectionWorldPlayer>();
                 ResultSet resSet = statement.executeQuery("SELECT id, name, type, timeAdded, whoAdd FROM '" + worldName + "'");
                 while (resSet.next()) {
-                    collections.add(new SectionWorldPlayer(resSet.getInt("id"), resSet.getString("name"), resSet.getString("type"), resSet.getLong("timeAdded"), resSet.getString("whoAdd")));
+                    collections.add(new SectionWorldPlayer(resSet.getInt("id"), resSet.getString("name"), PlayerType.valueOf(resSet.getString("type").toUpperCase()), resSet.getLong("timeAdded"), resSet.getString("whoAdd")));
                 }
                 return collections;
             }
-            catch (SQLException e) {
+            catch (Exception e) {
                 e.printStackTrace();
                 return Collections.emptyList();
             }

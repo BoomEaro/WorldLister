@@ -30,7 +30,7 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.WorldAccess;
+import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.WorldInfo;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
@@ -50,7 +50,7 @@ public class CheckListener implements Listener {
         if (e.getFrom().getWorld().equals(e.getTo().getWorld())) {
             return;
         }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
+        if (wi.getAcess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -83,7 +83,7 @@ public class CheckListener implements Listener {
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
+        if (wi.getAcess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -175,7 +175,7 @@ public class CheckListener implements Listener {
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
+        if (wi.getAcess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -288,7 +288,7 @@ public class CheckListener implements Listener {
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccess.PUBLIC) {
+        if (wi.getAcess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());

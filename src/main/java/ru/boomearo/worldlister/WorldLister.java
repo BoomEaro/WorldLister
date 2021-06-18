@@ -20,7 +20,7 @@ import ru.boomearo.worldlister.listeners.CheckListener;
 import ru.boomearo.worldlister.listeners.WorldListener;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.WorldAccess;
+import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.WorldInfo;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
@@ -89,17 +89,17 @@ public class WorldLister extends JavaPlugin implements Listener {
             for (World w : Bukkit.getWorlds()) {
                 SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
                 if (sw != null) {
-                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, WorldAccess.valueOf(sw.access)));
+                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, sw.access));
                 }
                 else {
-                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccess.PUBLIC));
+                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccessType.PUBLIC));
 
-                    Sql.getInstance().putSettings(w.getName(), false, "PUBLIC");
+                    Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);
                 }
             }
             for (WorldInfo wi : this.worlds.values()) {
                 for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName()).get()) {
-                    wi.addWorldPlayer(new WorldPlayer(swp.name, PlayerType.valueOf(swp.type), swp.timeAdd, swp.whoAdd));
+                    wi.addWorldPlayer(new WorldPlayer(swp.name, swp.type, swp.timeAdd, swp.whoAdd));
                 }
             }
         }
@@ -132,7 +132,7 @@ public class WorldLister extends JavaPlugin implements Listener {
             if (wi == null) {
                 continue;
             }
-            if (wi.getAcess() == WorldAccess.PUBLIC) {
+            if (wi.getAcess() == WorldAccessType.PUBLIC) {
                 continue;
             }
             String msg = MessageManager.get().getMessage("joinPerms");

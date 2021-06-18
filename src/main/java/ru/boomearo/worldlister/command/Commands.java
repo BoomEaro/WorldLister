@@ -19,7 +19,7 @@ import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.WorldAccess;
+import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.WorldInfo;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 import ru.boomearo.worldlister.utils.DateUtil;
@@ -189,7 +189,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                             if (wp.getType() == PlayerType.OWNER) {
                                 if (wi.isJoinIfOwnerOnline()) {
                                     wi.setJoinIfOwnerOnline(false);
-                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAcess().toString());
+                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAcess());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -197,7 +197,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 }
                                 else {
                                     wi.setJoinIfOwnerOnline(true);
-                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAcess().toString());
+                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAcess());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdActiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdActiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -301,7 +301,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnWorldNotExist").replace("%WORLD%", args[1]));
                         return true;
                     }
-                    if (wi.getAcess() == WorldAccess.PUBLIC) {
+                    if (wi.getAcess() == WorldAccessType.PUBLIC) {
                         pl.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnSucc"));
                         return true;
@@ -327,24 +327,24 @@ public class Commands implements CommandExecutor, TabCompleter {
                         if (wp != null) {
                             if (wp.getType() == PlayerType.OWNER) {
                                 if (args[1].equalsIgnoreCase("public")) {
-                                    if (wi.getAcess() == WorldAccess.PUBLIC) {
+                                    if (wi.getAcess() == WorldAccessType.PUBLIC) {
                                         sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
                                         return true;
                                     }
-                                    wi.setAccess(WorldAccess.PUBLIC);
-                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), "PUBLIC");
+                                    wi.setAccess(WorldAccessType.PUBLIC);
+                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), WorldAccessType.PUBLIC);
                                     sender.sendMessage(MessageManager.get().getMessage("cmdChangeModePublic"));
                                     for (Player pla : Bukkit.getOnlinePlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdChangeModePublicAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
                                     }
                                 }
                                 else if (args[1].equalsIgnoreCase("access")) {
-                                    if (wi.getAcess() == WorldAccess.ACCESS) {
+                                    if (wi.getAcess() == WorldAccessType.ACCESS) {
                                         sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
                                         return true;
                                     }
-                                    wi.setAccess(WorldAccess.ACCESS);
-                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), "ACCESS");
+                                    wi.setAccess(WorldAccessType.ACCESS);
+                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), WorldAccessType.ACCESS);
                                     sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccess"));
                                     for (Player pla : Bukkit.getOnlinePlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccessAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
@@ -591,7 +591,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 if (args[0].equalsIgnoreCase("spawn")) {
                     List<String> acceptedWorlds = new ArrayList<>();
                     for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
-                        if (wi.getAcess() == WorldAccess.PUBLIC) {
+                        if (wi.getAcess() == WorldAccessType.PUBLIC) {
                             acceptedWorlds.add(wi.getName());
                             continue;
                         }
