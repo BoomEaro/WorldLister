@@ -114,20 +114,20 @@ public class Commands implements CommandExecutor, TabCompleter {
                         String access = wi.getAccess().getName();
                         if (wp != null) {
                             if (wp.getType() == PlayerType.SPECTATOR) {
-                                msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&7Наблюдатель &f(" + access + "&f)";
+                                msg = "§fМир: '§6" + wi.getName() + "§f' = " + "§7Наблюдатель §f(" + access + "§f)";
                             }
                             else if (wp.getType() == PlayerType.MEMBER) {
-                                msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&fУчастник &f(" + access + "&f)";
+                                msg = "§fМир: '§6" + wi.getName() + "§f' = " + "§fУчастник §f(" + access + "§f)";
                             }
                             else if (wp.getType() == PlayerType.MODER) {
-                                msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&eМодератор &f(" + access + "&f)";
+                                msg = "§fМир: '§6" + wi.getName() + "§f' = " + "§eМодератор §f(" + access + "§f)";
                             }
                             else if (wp.getType() == PlayerType.OWNER) {
-                                msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&6Владелец &f(" + access + "&f)";
+                                msg = "§fМир: '§6" + wi.getName() + "§f' = " + "§6Владелец §f(" + access + "§f)";
                             }
                         }
                         else {
-                            msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&8Отсутствует запись &f(" + access + "&f)";
+                            msg = "§fМир: '§6" + wi.getName() + "§f' = " + "§8Отсутствует запись §f(" + access + "§f)";
                         }
                         sender.sendMessage(msg);
                     }
@@ -515,7 +515,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                     else {
                         wi.addWorldPlayer(new WorldPlayer(args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName()));
-                        Sql.getInstance().updateWorldPlayer(args[1], args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName());
+                        Sql.getInstance().putWorldPlayer(args[1], args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName());
                     }
                     sender.sendMessage("Игрок успешно установлен владельцем мира " + args[1]);
                 }

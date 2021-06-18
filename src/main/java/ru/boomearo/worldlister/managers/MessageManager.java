@@ -58,17 +58,17 @@ public class MessageManager {
         Configuration config = WorldLister.getInstance().getConfig();
         ConfigurationSection section = config.getConfigurationSection("Messages");
         if (section != null) {
-            for (String messages : section.getKeys(false)) {
-                if (!section.isList(messages)) {
-                    tmpMsgs.put(messages, section.getString(messages).replace("&", "§"));
+            for (String key : section.getKeys(false)) {
+                if (!section.isList(key)) {
+                    tmpMsgs.put(key, section.getString(key).replace("&", "§"));
                 }
                 else {
-                    List<String> originalList = section.getStringList(messages);
+                    List<String> originalList = section.getStringList(key);
                     List<String> tmp = new ArrayList<>();
                     for (String tmpMsg : originalList) {
                         tmp.add(tmpMsg.replace("&", "§"));
                     }
-                    tmpMsgsList.put(messages, Collections.unmodifiableList(tmp));
+                    tmpMsgsList.put(key, Collections.unmodifiableList(tmp));
                 }
             }
         }

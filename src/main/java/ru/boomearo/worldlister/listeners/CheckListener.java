@@ -187,8 +187,10 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("specCommandFailed");
         if (wp == null) {
-            pl.sendMessage(msg);
-            e.setCancelled(true);
+            if (isIllegalCommand(e.getMessage())) {
+                pl.sendMessage(msg);
+                e.setCancelled(true);
+            }
             return;
         }
 

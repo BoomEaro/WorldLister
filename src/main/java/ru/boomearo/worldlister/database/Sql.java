@@ -54,10 +54,10 @@ public class Sql {
         this.executor = Executors.newFixedThreadPool(1, new AdvThreadFactory("WorldLister-SQL", 3));
 
         for (World w : Bukkit.getWorlds()) {
-            Sql.getInstance().createNewDatabaseWorld(w.getName());
+            createNewDatabaseWorld(w.getName());
         }
 
-        Sql.getInstance().createNewDatabaseSettings();
+        createNewDatabaseSettings();
     }
 
     public Future<SectionWorld> getDataSettings(String name) {
