@@ -31,7 +31,6 @@ public class WorldPlayer {
         return this.whoAdd;
     }
 
-
     public void setType(PlayerType type) {
         this.type = type;
     }

@@ -1,11 +1,11 @@
 package ru.boomearo.worldlister.utils;
 
+import ru.boomearo.worldlister.WorldLister;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.bukkit.Bukkit;
 
 public class DateUtil {
     private static final Pattern timePattern = Pattern.compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*w[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*(?:s[a-z]*)?)?", Pattern.CASE_INSENSITIVE);
@@ -62,7 +62,7 @@ public class DateUtil {
             }
         }
         if (!found) {
-            Bukkit.getLogger().info("НЕ получилось");
+            WorldLister.getInstance().getLogger().info("Не получилось");
         }
         Calendar c = new GregorianCalendar();
         if (years > 0) {
@@ -99,15 +99,19 @@ public class DateUtil {
 
     //Мой метод :3
     //Формирование текста для бана.
-    public static String formatedTime(long time, boolean d) {
-        long counterdd;
-        if (d) {
-            counterdd = time / 1000;
+    public static String formatedTime(long time, boolean devide) {
+        long timeSecond;
+        if (devide) {
+            timeSecond = time / 1000;
         }
         else {
-            counterdd = time;
+            timeSecond = time;
         }
-        long timeSecond = counterdd;
+
+        if (timeSecond <= 0) {
+            return "0 секунд";
+        }
+
         int year = 0;
         int month = 0;
         int week = 0;
@@ -130,39 +134,30 @@ public class DateUtil {
         timeSecond = timeSecond - min * 60L;
         sec = (int) timeSecond;
 
-        String fyear = year + " " + convertSu(year, "год", "года", "лет") + " ";
-        String fmonth = month + " " + convertSu(month, "месяц", "месяца", "месяцев") + " ";
-        String fweek = week + " " + convertSu(week, "неделю", "недели", "недель") + " ";
-        String fday = day + " " + convertSu(day, "день", "дня", "дней") + " ";
-        String fhour = hour + " " + convertSu(hour, "час", "часа", "часов") + " ";
-        String fmin = min + " " + convertSu(min, "минуту", "минуты", "минут") + " ";
-        String fsec = sec + " " + convertSu(sec, "секунду", "секунды", "секунд") + " ";
-        if (year <= 0) {
-            fyear = "";
+        StringBuilder sb = new StringBuilder();
+        if (year > 0) {
+            sb.append(year).append(" ").append(convertSu(year, "год", "года", "лет")).append(month > 0 || week > 0 || day > 0 || hour > 0 || min > 0 || sec > 0 ? " " : "");
         }
-        if (month <= 0) {
-            fmonth = "";
+        if (month > 0) {
+            sb.append(month).append(" ").append(convertSu(month, "месяц", "месяца", "месяцев")).append(week > 0 || day > 0 || hour > 0 || min > 0 || sec > 0 ? " " : "");
         }
-        if (week <= 0) {
-            fweek = "";
+        if (week > 0) {
+            sb.append(week).append(" ").append(convertSu(week, "неделю", "недели", "недель")).append(day > 0 || hour > 0 || min > 0 || sec > 0 ? " " : "");
         }
-        if (day <= 0) {
-            fday = "";
+        if (day > 0) {
+            sb.append(day).append(" ").append(convertSu(day, "день", "дня", "дней")).append(hour > 0 || min > 0 || sec > 0 ? " " : "");
         }
-        if (hour <= 0) {
-            fhour = "";
+        if (hour > 0) {
+            sb.append(hour).append(" ").append(convertSu(hour, "час", "часа", "часов")).append(min > 0 || sec > 0 ? " " : "");
         }
-        if (min <= 0) {
-            fmin = "";
+        if (min > 0) {
+            sb.append(min).append(" ").append(convertSu(min, "минуту", "минуты", "минут")).append(sec > 0 ? " " : "");
         }
-        if (sec <= 0) {
-            fsec = "";
-        }
-        if (sec <= 0 && min <= 0 && hour <= 0 && day <= 0 && week <= 0 && month <= 0 && year <= 0) {
-            fsec = "сейчас.";
+        if (sec > 0) {
+            sb.append(sec).append(" ").append(convertSu(sec, "секунду", "секунды", "секунд"));
         }
 
-        return fyear + fmonth + fweek + fday + fhour + fmin + fsec;
+        return sb.toString();
 
     }
 

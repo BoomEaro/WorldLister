@@ -2,31 +2,25 @@ package ru.boomearo.worldlister;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.boomearo.worldlister.command.Commands;
 import ru.boomearo.worldlister.database.Sql;
-import ru.boomearo.worldlister.database.sections.SectionWorld;
-import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.listeners.CheckListener;
 import ru.boomearo.worldlister.listeners.WorldListener;
 import ru.boomearo.worldlister.managers.MessageManager;
+import ru.boomearo.worldlister.managers.ProtectedWorldManager;
 import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.WorldAccessType;
-import ru.boomearo.worldlister.objects.WorldInfo;
+import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class WorldLister extends JavaPlugin implements Listener {
 
-    private final ConcurrentMap<String, WorldInfo> worlds = new ConcurrentHashMap<String, WorldInfo>();
+    private ProtectedWorldManager manager = null;
 
     private static WorldLister instance = null;
 
@@ -43,14 +37,18 @@ public class WorldLister extends JavaPlugin implements Listener {
         MessageManager.get().loadMessages();
         loadDataBase();
 
+        if (this.manager == null) {
+            this.manager = new ProtectedWorldManager();
+
+            this.manager.loadWorlds();
+
+            this.manager.checkPlayersAccess();
+        }
+
         getServer().getPluginManager().registerEvents(new CheckListener(), this);
         getServer().getPluginManager().registerEvents(new WorldListener(), this);
 
         getCommand("worldlist").setExecutor(new Commands());
-
-        loadWorlds();
-
-        checkPlayersAccess();
 
         getLogger().info("Плагин успешно запущен.");
     }
@@ -66,6 +64,10 @@ public class WorldLister extends JavaPlugin implements Listener {
             e.printStackTrace();
         }
         getLogger().info("Плагин успешно выключился.");
+    }
+
+    public ProtectedWorldManager getProtectedWorldManager() {
+        return manager;
     }
 
     public static WorldLister getInstance() {
@@ -84,31 +86,7 @@ public class WorldLister extends JavaPlugin implements Listener {
         }
     }
 
-    public void loadWorlds()  {
-        try {
-            for (World w : Bukkit.getWorlds()) {
-                SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
-                if (sw != null) {
-                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), sw.joinIf, sw.access));
-                }
-                else {
-                    this.worlds.put(w.getName(), new WorldInfo(w.getName(), false, WorldAccessType.PUBLIC));
-
-                    Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);
-                }
-            }
-            for (WorldInfo wi : this.worlds.values()) {
-                for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(wi.getName()).get()) {
-                    wi.addWorldPlayer(new WorldPlayer(swp.name, swp.type, swp.timeAdd, swp.whoAdd));
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static boolean checkOnline(WorldInfo wi) {
+    public static boolean checkOnline(ProtectedWorld wi) {
         for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
             if (wpa.getType() == PlayerType.OWNER) {
                 if (getPlayerRight(wpa.getName()) != null) {
@@ -125,28 +103,6 @@ public class WorldLister extends JavaPlugin implements Listener {
         pl.chat("//none");
     }
 
-    private void checkPlayersAccess() {
-        for (Player pl : Bukkit.getOnlinePlayers()) {
-            String w = pl.getLocation().getWorld().getName();
-            WorldInfo wi = this.worlds.get(w);
-            if (wi == null) {
-                continue;
-            }
-            if (wi.getAcess() == WorldAccessType.PUBLIC) {
-                continue;
-            }
-            String msg = MessageManager.get().getMessage("joinPerms");
-            WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-            if (wp != null) {
-                continue;
-            }
-
-            pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
-            pl.sendMessage(msg.replace("%WORLD%", w));
-        }
-    }
-
-
     public static Player getPlayerRight(String name) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             if (pl.getName().equals(name)) {
@@ -156,20 +112,5 @@ public class WorldLister extends JavaPlugin implements Listener {
         return null;
     }
 
-    public WorldInfo getWorldInfo(String world) {
-        return this.worlds.get(world);
-    }
-
-    public Collection<WorldInfo> getAllWorlds() {
-        return this.worlds.values();
-    }
-
-    public void addWorldInfo(WorldInfo world) {
-        this.worlds.put(world.getName(), world);
-    }
-
-    public void removeWorldInfo(String world) {
-        this.worlds.remove(world);
-    }
 
 }

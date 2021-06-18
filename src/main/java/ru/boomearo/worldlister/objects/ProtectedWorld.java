@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class WorldInfo {
+public class ProtectedWorld {
 
     private final String name;
 
@@ -14,7 +14,7 @@ public class WorldInfo {
     private boolean joinIfOwnerOnline;
     private WorldAccessType access;
 
-    public WorldInfo(String name, boolean joinIfOwnerOnline, WorldAccessType access) {
+    public ProtectedWorld(String name, boolean joinIfOwnerOnline, WorldAccessType access) {
         this.name = name;
         this.joinIfOwnerOnline = joinIfOwnerOnline;
         this.access = access;
@@ -48,16 +48,16 @@ public class WorldInfo {
         return this.joinIfOwnerOnline;
     }
 
-    public WorldAccessType getAcess() {
+    public WorldAccessType getAccess() {
         return this.access;
     }
 
-    public void setJoinIfOwnerOnline(boolean b) {
-        this.joinIfOwnerOnline = b;
+    public void setJoinIfOwnerOnline(boolean enabled) {
+        this.joinIfOwnerOnline = enabled;
     }
 
-    public void setAccess(WorldAccessType wa) {
-        this.access = wa;
+    public void setAccess(WorldAccessType type) {
+        this.access = type;
     }
 
     @Override

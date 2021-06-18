@@ -20,7 +20,7 @@ import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccessType;
-import ru.boomearo.worldlister.objects.WorldInfo;
+import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 import ru.boomearo.worldlister.utils.DateUtil;
 
@@ -42,7 +42,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             }
             if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("list")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(pl.getWorld().getName());
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
                         List<String> owners = new ArrayList<String>();
                         List<String> moders = new ArrayList<String>();
@@ -100,7 +100,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage("Участники: " + ChatColor.GOLD + "(" + len + ")" + ChatColor.WHITE + ": " + msg);
                         sender.sendMessage("Наблюдатели: " + ChatColor.GOLD + "(" + len4 + ")" + ChatColor.WHITE + ": " + msg4);
                         sender.sendMessage("Улучшенный режим: " + (wi.isJoinIfOwnerOnline() ? ChatColor.GREEN + "Активирован" : ChatColor.RED + "Деактивирован"));
-                        sender.sendMessage("Режим входа: " + wi.getAcess().getName());
+                        sender.sendMessage("Режим входа: " + wi.getAccess().getName());
                     }
                     else {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
@@ -109,9 +109,9 @@ public class Commands implements CommandExecutor, TabCompleter {
                 else if (args[0].equalsIgnoreCase("access")) {
                     String msg = "";
                     sender.sendMessage(ChatColor.GOLD + "Список миров и уровень доступа:");
-                    for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
+                    for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        String access = wi.getAcess().getName();
+                        String access = wi.getAccess().getName();
                         if (wp != null) {
                             if (wp.getType() == PlayerType.SPECTATOR) {
                                 msg = "&fМир: '&6" + wi.getName() + "&f' = " + "&7Наблюдатель &f(" + access + "&f)";
@@ -134,7 +134,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("players")) {
                     sender.sendMessage(ChatColor.GOLD + "Список игроков и в каких мирах они находятся:");
-                    for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
+                    for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
                         World w = Bukkit.getWorld(wi.getName());
                         List<String> players = new ArrayList<String>();
                         for (Player p : w.getPlayers()) {
@@ -157,7 +157,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
                 }
                 else if (args[0].equalsIgnoreCase("setspawn")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(pl.getWorld().getName());
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp != null) {
@@ -182,14 +182,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
                 else if (args[0].equalsIgnoreCase("advmode")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(pl.getWorld().getName());
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp != null) {
                             if (wp.getType() == PlayerType.OWNER) {
                                 if (wi.isJoinIfOwnerOnline()) {
                                     wi.setJoinIfOwnerOnline(false);
-                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAcess());
+                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAccess());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -197,7 +197,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 }
                                 else {
                                     wi.setJoinIfOwnerOnline(true);
-                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAcess());
+                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAccess());
                                     sender.sendMessage(MessageManager.get().getMessage("cmdActiveAdvMode"));
                                     for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
                                         pla.sendMessage(MessageManager.get().getMessage("cmdActiveAdvModeAll").replace("%PLAYER%", pl.getName()));
@@ -220,7 +220,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 2) {
                 if (args[0].equalsIgnoreCase("addplayer")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
                         return true;
@@ -252,7 +252,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("removeplayer")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
                         return true;
@@ -296,12 +296,12 @@ public class Commands implements CommandExecutor, TabCompleter {
                     sender.sendMessage(MessageManager.get().getMessage("remWorldSucc").replace("%PLAYER%", args[1]));
                 }
                 else if (args[0].equalsIgnoreCase("spawn")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(args[1]);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
                     if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnWorldNotExist").replace("%WORLD%", args[1]));
                         return true;
                     }
-                    if (wi.getAcess() == WorldAccessType.PUBLIC) {
+                    if (wi.getAccess() == WorldAccessType.PUBLIC) {
                         pl.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnSucc"));
                         return true;
@@ -321,13 +321,13 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
                 else if (args[0].equalsIgnoreCase("accessmode")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(pl.getWorld().getName());
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp != null) {
                             if (wp.getType() == PlayerType.OWNER) {
                                 if (args[1].equalsIgnoreCase("public")) {
-                                    if (wi.getAcess() == WorldAccessType.PUBLIC) {
+                                    if (wi.getAccess() == WorldAccessType.PUBLIC) {
                                         sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
                                         return true;
                                     }
@@ -339,7 +339,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                     }
                                 }
                                 else if (args[1].equalsIgnoreCase("access")) {
-                                    if (wi.getAcess() == WorldAccessType.ACCESS) {
+                                    if (wi.getAccess() == WorldAccessType.ACCESS) {
                                         sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
                                         return true;
                                     }
@@ -367,7 +367,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
                 else if (args[0].equalsIgnoreCase("player")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(pl.getWorld().getName());
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp != null) {
@@ -378,7 +378,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                     sender.sendMessage("Мир: " + wi.getName());
                                     sender.sendMessage("Тип: " + wpa.getType().getName());
                                     sender.sendMessage("Кем добавлен: " + wpa.getWhoAdd());
-                                    sender.sendMessage("Был добавлен: " + (DateUtil.formatedTime(System.currentTimeMillis() - wpa.getTimeAdded(), true)) + "назад.");
+                                    sender.sendMessage("Был добавлен: " + (DateUtil.formatedTime(System.currentTimeMillis() - wpa.getTimeAdded(), true)) + " назад.");
                                 }
                                 else {
                                     sender.sendMessage(MessageManager.get().getMessage("remWorldNotF").replace("%PLAYER%", args[1]));
@@ -400,7 +400,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("set")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
                         return true;
@@ -522,7 +522,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             }
             if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("addowner")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(args[1]);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(args[2]);
                         if (wp != null) {
@@ -544,7 +544,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
                 else if (args[0].equalsIgnoreCase("removeowner")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(args[1]);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(args[2]);
                         if (wp != null) {
@@ -590,8 +590,8 @@ public class Commands implements CommandExecutor, TabCompleter {
             else if (args.length == 2) {
                 if (args[0].equalsIgnoreCase("spawn")) {
                     List<String> acceptedWorlds = new ArrayList<>();
-                    for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
-                        if (wi.getAcess() == WorldAccessType.PUBLIC) {
+                    for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
+                        if (wi.getAccess() == WorldAccessType.PUBLIC) {
                             acceptedWorlds.add(wi.getName());
                             continue;
                         }
@@ -615,7 +615,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("addplayer")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp == null) {
@@ -642,7 +642,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("removeplayer") || args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("player")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp == null) {
@@ -664,7 +664,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("accessmode")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp == null) {
@@ -688,7 +688,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             else if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("set")) {
                     String plw = pl.getWorld().getName();
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(plw);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(plw);
                     if (wi != null) {
                         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
                         if (wp == null) {
@@ -760,7 +760,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     return matches;
                 }
                 else if (args[0].equalsIgnoreCase("removeowner")) {
-                    WorldInfo wi = WorldLister.getInstance().getWorldInfo(args[1]);
+                    ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
                     if (wi == null) {
                         return empty;
                     }

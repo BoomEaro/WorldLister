@@ -31,7 +31,7 @@ import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccessType;
-import ru.boomearo.worldlister.objects.WorldInfo;
+import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class CheckListener implements Listener {
@@ -43,14 +43,14 @@ public class CheckListener implements Listener {
         if (pl.hasMetadata("NPC")) {
             return;
         }
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
+        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
         if (wi == null) {
             return;
         }
         if (e.getFrom().getWorld().equals(e.getTo().getWorld())) {
             return;
         }
-        if (wi.getAcess() == WorldAccessType.PUBLIC) {
+        if (wi.getAccess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -79,11 +79,11 @@ public class CheckListener implements Listener {
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
         Player pl = e.getPlayer();
         String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
+        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccessType.PUBLIC) {
+        if (wi.getAccess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -97,7 +97,7 @@ public class CheckListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuitEvent(PlayerQuitEvent e) {
         Player pl = e.getPlayer();
-        for (WorldInfo wi : WorldLister.getInstance().getAllWorlds()) {
+        for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
             WorldPlayer wp = wi.getWorldPlayer(pl.getName());
             if (wp != null) {
                 PlayerType type = wp.getType();
@@ -171,11 +171,11 @@ public class CheckListener implements Listener {
     public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
         Player pl = e.getPlayer();
         String w = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(w);
+        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccessType.PUBLIC) {
+        if (wi.getAccess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
@@ -284,11 +284,11 @@ public class CheckListener implements Listener {
             return;
         }
         String worldName = pl.getLocation().getWorld().getName();
-        WorldInfo wi = WorldLister.getInstance().getWorldInfo(worldName);
+        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(worldName);
         if (wi == null) {
             return;
         }
-        if (wi.getAcess() == WorldAccessType.PUBLIC) {
+        if (wi.getAccess() == WorldAccessType.PUBLIC) {
             return;
         }
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());

@@ -10,9 +10,9 @@ import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
-import ru.boomearo.worldlister.objects.PlayerType;
+import ru.boomearo.worldlister.managers.ProtectedWorldManager;
 import ru.boomearo.worldlister.objects.WorldAccessType;
-import ru.boomearo.worldlister.objects.WorldInfo;
+import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class WorldListener implements Listener {
@@ -23,7 +23,8 @@ public class WorldListener implements Listener {
     @EventHandler
     public void onWorldLoadEvent(WorldLoadEvent e) {
         World w = e.getWorld();
-        WorldInfo worldInfo = WorldLister.getInstance().getWorldInfo(w.getName());
+        ProtectedWorldManager manager = WorldLister.getInstance().getProtectedWorldManager();
+        ProtectedWorld worldInfo = manager.getProtectedWorld(w.getName());
         if (worldInfo != null) {
             return;
         }
@@ -32,12 +33,12 @@ public class WorldListener implements Listener {
 
             SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
             if (sw != null) {
-                worldInfo = new WorldInfo(w.getName(), sw.joinIf, sw.access);
-                WorldLister.getInstance().addWorldInfo(worldInfo);
+                worldInfo = new ProtectedWorld(w.getName(), sw.joinIf, sw.access);
+                manager.addProtectedWorld(worldInfo);
             }
             else {
-                worldInfo = new WorldInfo(w.getName(), false, WorldAccessType.PUBLIC);
-                WorldLister.getInstance().addWorldInfo(worldInfo);
+                worldInfo = new ProtectedWorld(w.getName(), false, WorldAccessType.PUBLIC);
+                manager.addProtectedWorld(worldInfo);
 
                 Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);
             }
@@ -53,11 +54,12 @@ public class WorldListener implements Listener {
     @EventHandler
     public void onWorldUnloadEvent(WorldUnloadEvent e) {
         World w = e.getWorld();
-        WorldInfo worldInfo = WorldLister.getInstance().getWorldInfo(w.getName());
+        ProtectedWorldManager manager = WorldLister.getInstance().getProtectedWorldManager();
+        ProtectedWorld worldInfo = manager.getProtectedWorld(w.getName());
         if (worldInfo == null) {
             return;
         }
-        WorldLister.getInstance().removeWorldInfo(w.getName());
+        manager.removeProtectedWorld(w.getName());
     }
 
 }
