@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
@@ -78,7 +79,7 @@ public final class ProtectedWorldManager {
                 continue;
             }
 
-            pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
+            pl.teleport(WorldLister.getMainWorld().getSpawnLocation());
             pl.sendMessage(msg.replace("%WORLD%", w));
         }
     }

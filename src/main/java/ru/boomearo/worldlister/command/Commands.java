@@ -31,7 +31,7 @@ public class Commands implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player pl = (Player) sender;
-            if (!(pl.hasPermission("worldlist.commands"))) {
+            if (!(pl.hasPermission("worldlister.commands"))) {
                 pl.sendMessage(MessageManager.get().getMessage("dontHavePermissions"));
                 return true;
             }
@@ -288,7 +288,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     Player pla = WorldLister.getPlayerRight(args[1]);
                     if (pla != null) {
                         if (pla.getLocation().getWorld().getName().equals(plw)) {
-                            pla.teleport(Bukkit.getWorld("world").getSpawnLocation());
+                            pla.teleport(WorldLister.getMainWorld().getSpawnLocation());
                             pla.sendMessage(MessageManager.get().getMessage("remWorldMsg1").replace("%WORLD%", plw).replace("%PLAYER%", pl.getName()));
                         }
                         else {

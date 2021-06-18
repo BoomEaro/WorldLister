@@ -6,7 +6,7 @@ description: World lister
 api-version: 1.13
 softdepend: [MultiWorld, Multiverse-Core]
 commands:
-  worldlist:
+  worldlister:
     usage: /worldlist access/list
-    aliases: [wol]
+    aliases: [worldlist, wol]
     description: add/remove player

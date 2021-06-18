@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.SQLException;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,9 +25,14 @@ public class WorldLister extends JavaPlugin implements Listener {
 
     private static WorldLister instance = null;
 
+    private static World mainWorld = null;
+
     @Override
     public void onEnable() {
         instance = this;
+
+        //Получаем самый основной мир
+        mainWorld = Bukkit.getWorlds().get(0);
 
         File configFile = new File(getDataFolder() + File.separator + "config.yml");
         if (!configFile.exists()) {
@@ -48,7 +54,7 @@ public class WorldLister extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new CheckListener(), this);
         getServer().getPluginManager().registerEvents(new WorldListener(), this);
 
-        getCommand("worldlist").setExecutor(new Commands());
+        getCommand("worldlister").setExecutor(new Commands());
 
         getLogger().info("Плагин успешно запущен.");
     }
@@ -74,6 +80,10 @@ public class WorldLister extends JavaPlugin implements Listener {
         return instance;
     }
 
+    public static World getMainWorld() {
+        return mainWorld;
+    }
+
     public void loadDataBase() {
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();
@@ -95,12 +105,6 @@ public class WorldLister extends JavaPlugin implements Listener {
             }
         }
         return false;
-    }
-
-
-    public static void tpWorldClear(Player pl) {
-        pl.getInventory().clear();
-        pl.chat("//none");
     }
 
     public static Player getPlayerRight(String name) {

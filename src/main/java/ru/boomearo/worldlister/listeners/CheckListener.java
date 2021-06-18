@@ -64,14 +64,20 @@ public class CheckListener implements Listener {
 
         if (!wi.isJoinIfOwnerOnline()) {
             if (type == PlayerType.SPECTATOR) {
-                WorldLister.tpWorldClear(pl);
+                tpWorldClear(pl);
             }
         }
         else {
             if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                WorldLister.tpWorldClear(pl);
+                tpWorldClear(pl);
             }
         }
+    }
+
+    private static void tpWorldClear(Player pl) {
+        pl.getInventory().clear();
+        //TODO костыль, если нужно, можно придумать что то другое
+        pl.chat("//none");
     }
 
 
@@ -89,7 +95,7 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("joinPerms");
         if (wp == null) {
-            pl.teleport(Bukkit.getWorld("world").getSpawnLocation());
+            pl.teleport(WorldLister.getMainWorld().getSpawnLocation());
             pl.sendMessage(msg.replace("%WORLD%", w));
         }
     }
