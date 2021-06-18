@@ -112,7 +112,7 @@ public class CheckListener implements Listener {
                             }
                         }
                         if (playerOnline.size() <= 1) {
-                            for (Player ppp : Bukkit.getWorld(wi.getName()).getPlayers()) {
+                            for (Player ppp : wi.getWorld().getPlayers()) {
                                 String info1 = "&cПоследний владелец " + pl.getName() + " мира '" + wi.getName() + "' покинул сервер. Теперь у вас отсутствует доступ к модификации этого мира.";
                                 ppp.sendMessage(info1);
                             }

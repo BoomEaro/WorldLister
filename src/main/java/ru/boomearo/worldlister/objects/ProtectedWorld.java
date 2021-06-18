@@ -1,5 +1,7 @@
 package ru.boomearo.worldlister.objects;
 
+import org.bukkit.World;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,20 +10,26 @@ import java.util.concurrent.ConcurrentMap;
 public class ProtectedWorld {
 
     private final String name;
+    private final World world;
 
     private final ConcurrentMap<String, WorldPlayer> players = new ConcurrentHashMap<String, WorldPlayer>();
 
     private boolean joinIfOwnerOnline;
     private WorldAccessType access;
 
-    public ProtectedWorld(String name, boolean joinIfOwnerOnline, WorldAccessType access) {
+    public ProtectedWorld(String name, World world, boolean joinIfOwnerOnline, WorldAccessType access) {
         this.name = name;
+        this.world = world;
         this.joinIfOwnerOnline = joinIfOwnerOnline;
         this.access = access;
     }
 
     public String getName() {
         return this.name;
+    }
+
+    public World getWorld() {
+        return this.world;
     }
 
     public WorldPlayer getWorldPlayer(String player) {

@@ -131,13 +131,13 @@ public class Sql {
         });
     }
 
-    public void putWorldPlayer(String worldName, String name, String type, Long timeAdded, String whoAdd) {
+    public void putWorldPlayer(String worldName, String name, PlayerType type, long timeAdded, String whoAdd) {
         this.executor.execute(() -> {
             try (PreparedStatement statement = this.connection.prepareStatement(
                     "INSERT INTO '" + worldName + "'(`name`, `type`, `timeAdded`, `whoAdd`) " +
                             "VALUES(?, ?, ?, ?)")) {
                 statement.setString(1, name);
-                statement.setString(2, type);
+                statement.setString(2, type.name());
                 statement.setLong(3, timeAdded);
                 statement.setString(4, whoAdd);
                 statement.execute();
@@ -161,7 +161,7 @@ public class Sql {
         });
     }
 
-    public void updateWorldPlayer(String worldName, String name, String type, Long timeAdded, String whoAdd) {
+    public void updateWorldPlayer(String worldName, String name, PlayerType type, long timeAdded, String whoAdd) {
         this.executor.execute(() -> {
             String sql = "UPDATE '" + worldName + "' SET type = ? , "
                     + "timeAdded = ? , "
@@ -170,7 +170,7 @@ public class Sql {
 
             try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
 
-                pstmt.setString(1, type);
+                pstmt.setString(1, type.name());
                 pstmt.setLong(2, timeAdded);
                 pstmt.setString(3, whoAdd);
                 pstmt.setString(4, name);

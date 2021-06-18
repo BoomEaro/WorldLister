@@ -3,6 +3,7 @@ package ru.boomearo.worldlister.managers;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
 import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
@@ -41,10 +42,10 @@ public final class ProtectedWorldManager {
                 SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
                 ProtectedWorld newPw;
                 if (sw != null) {
-                    newPw = new ProtectedWorld(w.getName(), sw.joinIf, sw.access);
+                    newPw = new ProtectedWorld(w.getName(), w, sw.joinIf, sw.access);
                 }
                 else {
-                    newPw = new ProtectedWorld(w.getName(), false, WorldAccessType.PUBLIC);
+                    newPw = new ProtectedWorld(w.getName(), w, false, WorldAccessType.PUBLIC);
                     Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);
                 }
 

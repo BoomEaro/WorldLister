@@ -33,11 +33,11 @@ public class WorldListener implements Listener {
 
             SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
             if (sw != null) {
-                worldInfo = new ProtectedWorld(w.getName(), sw.joinIf, sw.access);
+                worldInfo = new ProtectedWorld(w.getName(), w, sw.joinIf, sw.access);
                 manager.addProtectedWorld(worldInfo);
             }
             else {
-                worldInfo = new ProtectedWorld(w.getName(), false, WorldAccessType.PUBLIC);
+                worldInfo = new ProtectedWorld(w.getName(), w, false, WorldAccessType.PUBLIC);
                 manager.addProtectedWorld(worldInfo);
 
                 Sql.getInstance().putSettings(w.getName(), false, WorldAccessType.PUBLIC);

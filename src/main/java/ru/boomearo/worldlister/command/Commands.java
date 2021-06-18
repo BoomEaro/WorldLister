@@ -135,7 +135,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                 else if (args[0].equalsIgnoreCase("players")) {
                     sender.sendMessage(ChatColor.GOLD + "Список игроков и в каких мирах они находятся:");
                     for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
-                        World w = Bukkit.getWorld(wi.getName());
+                        World w = wi.getWorld();
                         List<String> players = new ArrayList<String>();
                         for (Player p : w.getPlayers()) {
                             players.add(p.getName());
@@ -158,62 +158,60 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("setspawn")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER) {
-                                Location pll = pl.getLocation();
-                                Bukkit.getWorld(wi.getName()).setSpawnLocation(pll);
-                                int x = pll.getBlockX();
-                                int y = pll.getBlockY();
-                                int z = pll.getBlockZ();
-                                sender.sendMessage(MessageManager.get().getMessage("cmdSetSpawnSucc").replace("%X%", "" + x).replace("%Y%", "" + y).replace("%Z%", "" + z).replace("%WORLD%", pl.getWorld().getName()));
-                            }
-                            else {
-                                sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                            }
-                        }
-                        else {
-                            sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                        }
-                    }
-                    else {
+                    if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                        return true;
                     }
+                    WorldPlayer wp = wi.getWorldPlayer(pl.getName());
+                    if (wp == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+                    if (wp.getType() != PlayerType.OWNER) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+
+                    Location pll = pl.getLocation();
+                    wi.getWorld().setSpawnLocation(pll);
+
+                    int x = pll.getBlockX();
+                    int y = pll.getBlockY();
+                    int z = pll.getBlockZ();
+
+                    sender.sendMessage(MessageManager.get().getMessage("cmdSetSpawnSucc").replace("%X%", "" + x).replace("%Y%", "" + y).replace("%Z%", "" + z).replace("%WORLD%", pl.getWorld().getName()));
                 }
                 else if (args[0].equalsIgnoreCase("advmode")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER) {
-                                if (wi.isJoinIfOwnerOnline()) {
-                                    wi.setJoinIfOwnerOnline(false);
-                                    Sql.getInstance().updateSettings(wi.getName(), false, wi.getAccess());
-                                    sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode"));
-                                    for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
-                                        pla.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvModeAll").replace("%PLAYER%", pl.getName()));
-                                    }
-                                }
-                                else {
-                                    wi.setJoinIfOwnerOnline(true);
-                                    Sql.getInstance().updateSettings(wi.getName(), true, wi.getAccess());
-                                    sender.sendMessage(MessageManager.get().getMessage("cmdActiveAdvMode"));
-                                    for (Player pla : Bukkit.getWorld(wi.getName()).getPlayers()) {
-                                        pla.sendMessage(MessageManager.get().getMessage("cmdActiveAdvModeAll").replace("%PLAYER%", pl.getName()));
-                                    }
-                                }
-                            }
-                            else {
-                                sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                            }
-                        }
-                        else {
-                            sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                    if (wi == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                        return true;
+                    }
+                    WorldPlayer wp = wi.getWorldPlayer(pl.getName());
+                    if (wp == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+                    if (wp.getType() != PlayerType.OWNER) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+
+                    wi.setJoinIfOwnerOnline(!wi.isJoinIfOwnerOnline());
+
+                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), wi.getAccess());
+
+                    if (wi.isJoinIfOwnerOnline()) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdActiveAdvMode"));
+                        for (Player pla : wi.getWorld().getPlayers()) {
+                            pla.sendMessage(MessageManager.get().getMessage("cmdActiveAdvModeAll").replace("%PLAYER%", pl.getName()));
                         }
                     }
                     else {
-                        sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                        sender.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvMode"));
+                        for (Player pla : wi.getWorld().getPlayers()) {
+                            pla.sendMessage(MessageManager.get().getMessage("cmdDeactiveAdvModeAll").replace("%PLAYER%", pl.getName()));
+                        }
                     }
                 }
             }
@@ -245,8 +243,10 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage(MessageManager.get().getMessage("areWorldAdded"));
                         return true;
                     }
+
                     wi.addWorldPlayer(new WorldPlayer(args[1], PlayerType.SPECTATOR, System.currentTimeMillis(), pl.getName()));
-                    Sql.getInstance().putWorldPlayer(plw, args[1], "SPECTATOR", System.currentTimeMillis(), pl.getName());
+                    Sql.getInstance().putWorldPlayer(plw, args[1], PlayerType.SPECTATOR, System.currentTimeMillis(), pl.getName());
+
                     sender.sendMessage(MessageManager.get().getMessage("addWorldSucc").replace("%PLAYER%", args[1]));
                     pla.sendMessage(MessageManager.get().getMessage("addWorldToPl").replace("%PLAYER%", args[1]).replace("%WORLD%", plw));
                 }
@@ -281,8 +281,10 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage(MessageManager.get().getMessage("editPerms"));
                         return true;
                     }
+
                     wi.removeWorldPlayer(args[1]);
                     Sql.getInstance().removeWorldPlayer(plw, args[1]);
+
                     Player pla = WorldLister.getPlayerRight(args[1]);
                     if (pla != null) {
                         if (pla.getLocation().getWorld().getName().equals(plw)) {
@@ -302,7 +304,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return true;
                     }
                     if (wi.getAccess() == WorldAccessType.PUBLIC) {
-                        pl.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
+                        pl.teleport(wi.getWorld().getSpawnLocation());
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnSucc"));
                         return true;
                     }
@@ -313,7 +315,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                     PlayerType type = wp.getType();
                     if (type == PlayerType.OWNER || type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
-                        pl.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
+                        pl.teleport(wi.getWorld().getSpawnLocation());
                         sender.sendMessage(MessageManager.get().getMessage("cmdSpawnSucc"));
                     }
                     else {
@@ -322,79 +324,78 @@ public class Commands implements CommandExecutor, TabCompleter {
                 }
                 else if (args[0].equalsIgnoreCase("accessmode")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER) {
-                                if (args[1].equalsIgnoreCase("public")) {
-                                    if (wi.getAccess() == WorldAccessType.PUBLIC) {
-                                        sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
-                                        return true;
-                                    }
-                                    wi.setAccess(WorldAccessType.PUBLIC);
-                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), WorldAccessType.PUBLIC);
-                                    sender.sendMessage(MessageManager.get().getMessage("cmdChangeModePublic"));
-                                    for (Player pla : Bukkit.getOnlinePlayers()) {
-                                        pla.sendMessage(MessageManager.get().getMessage("cmdChangeModePublicAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
-                                    }
-                                }
-                                else if (args[1].equalsIgnoreCase("access")) {
-                                    if (wi.getAccess() == WorldAccessType.ACCESS) {
-                                        sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
-                                        return true;
-                                    }
-                                    wi.setAccess(WorldAccessType.ACCESS);
-                                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), WorldAccessType.ACCESS);
-                                    sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccess"));
-                                    for (Player pla : Bukkit.getOnlinePlayers()) {
-                                        pla.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccessAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
-                                    }
-                                }
-                                else {
-                                    sender.sendMessage("Аргумент должен быть значением 'public' или 'access'");
-                                }
-                            }
-                            else {
-                                sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                            }
-                        }
-                        else {
-                            sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                    if (wi == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                        return true;
+                    }
+                    WorldPlayer wp = wi.getWorldPlayer(pl.getName());
+                    if (wp == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+                    if (wp.getType() != PlayerType.OWNER) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+
+                    WorldAccessType type = null;
+                    try {
+                        type = WorldAccessType.valueOf(args[1].toUpperCase());
+                    }
+                    catch (Exception e) {
+                    }
+                    if (type == null) {
+                        sender.sendMessage("Аргумент должен быть значением 'public' или 'access'");
+                        return true;
+                    }
+
+                    if (wi.getAccess() == type) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeIsActivated"));
+                        return true;
+                    }
+
+                    wi.setAccess(type);
+                    Sql.getInstance().updateSettings(wi.getName(), wi.isJoinIfOwnerOnline(), type);
+
+                    if (type == WorldAccessType.PUBLIC) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdChangeModePublic"));
+                        for (Player pla : Bukkit.getOnlinePlayers()) {
+                            pla.sendMessage(MessageManager.get().getMessage("cmdChangeModePublicAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
                         }
                     }
-                    else {
-                        sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                    else if (type == WorldAccessType.ACCESS) {
+                        sender.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccess"));
+                        for (Player pla : Bukkit.getOnlinePlayers()) {
+                            pla.sendMessage(MessageManager.get().getMessage("cmdChangeModeAccessAll").replace("%PLAYER%", pl.getName()).replace("%WORLD%", pl.getWorld().getName()));
+                        }
                     }
                 }
                 else if (args[0].equalsIgnoreCase("player")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(pl.getName());
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER || wp.getType() == PlayerType.MODER) {
-                                WorldPlayer wpa = wi.getWorldPlayer(args[1]);
-                                if (wpa != null) {
-                                    sender.sendMessage("Ник: " + wpa.getName());
-                                    sender.sendMessage("Мир: " + wi.getName());
-                                    sender.sendMessage("Тип: " + wpa.getType().getName());
-                                    sender.sendMessage("Кем добавлен: " + wpa.getWhoAdd());
-                                    sender.sendMessage("Был добавлен: " + (DateUtil.formatedTime(System.currentTimeMillis() - wpa.getTimeAdded(), true)) + " назад.");
-                                }
-                                else {
-                                    sender.sendMessage(MessageManager.get().getMessage("remWorldNotF").replace("%PLAYER%", args[1]));
-                                }
-                            }
-                            else {
-                                sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                            }
-                        }
-                        else {
-                            sender.sendMessage(MessageManager.get().getMessage("editPerms"));
-                        }
-                    }
-                    else {
+                    if (wi == null) {
                         sender.sendMessage(MessageManager.get().getMessage("cmdNotWorldErr"));
+                        return true;
                     }
+                    WorldPlayer wp = wi.getWorldPlayer(pl.getName());
+                    if (wp == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+                    if (!(wp.getType() == PlayerType.OWNER || wp.getType() == PlayerType.MODER)) {
+                        sender.sendMessage(MessageManager.get().getMessage("editPerms"));
+                        return true;
+                    }
+                    WorldPlayer wpa = wi.getWorldPlayer(args[1]);
+                    if (wpa == null) {
+                        sender.sendMessage(MessageManager.get().getMessage("remWorldNotF").replace("%PLAYER%", args[1]));
+                        return true;
+                    }
+
+                    sender.sendMessage("Ник: " + wpa.getName());
+                    sender.sendMessage("Мир: " + wi.getName());
+                    sender.sendMessage("Тип: " + wpa.getType().getName());
+                    sender.sendMessage("Кем добавлен: " + wpa.getWhoAdd());
+                    sender.sendMessage("Был добавлен: " + (DateUtil.formatedTime(System.currentTimeMillis() - wpa.getTimeAdded(), true)) + " назад.");
                 }
             }
             if (args.length == 3) {
@@ -410,8 +411,8 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage(MessageManager.get().getMessage("editPerms"));
                         return true;
                     }
-                    PlayerType type = wp.getType();
-                    if (!(type == PlayerType.OWNER || type == PlayerType.MODER)) {
+                    PlayerType editorType = wp.getType();
+                    if (!(editorType == PlayerType.OWNER || editorType == PlayerType.MODER)) {
                         sender.sendMessage(MessageManager.get().getMessage("editPerms"));
                         return true;
                     }
@@ -420,89 +421,64 @@ public class Commands implements CommandExecutor, TabCompleter {
                         sender.sendMessage(MessageManager.get().getMessage("remWorldNotF").replace("%PLAYER%", args[1]));
                         return true;
                     }
-                    PlayerType typea = wpa.getType();
-                    if (type == PlayerType.OWNER) {
-                        if (typea == PlayerType.OWNER) {
+
+                    PlayerType targetType = wpa.getType();
+                    PlayerType newType = null;
+                    try {
+                        newType = PlayerType.valueOf(args[2].toUpperCase());
+                    }
+                    catch (Exception e) {
+                    }
+                    if (newType == null) {
+                        pl.sendMessage("Значение может быть только 'moder', 'member' и 'spectator'");
+                        return true;
+                    }
+
+                    if (editorType == PlayerType.OWNER) {
+                        if (targetType == PlayerType.OWNER) {
                             pl.sendMessage(MessageManager.get().getMessage("cmdNotAllowChangeType"));
                             return true;
                         }
-                        if (args[2].equalsIgnoreCase("moder")) {
-                            if (wpa.getType() == PlayerType.MODER) {
-                                pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
-                                return true;
-                            }
-                            wpa.setType(PlayerType.MODER);
-                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MODER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
-                            pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "модератор"));
-                            Player pla = WorldLister.getPlayerRight(args[1]);
-                            if (pla != null) {
-                                pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", "модератор").replace("%WORLD%", plw));
-                            }
+
+                        if (wpa.getType() == newType) {
+                            pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
+                            return true;
                         }
-                        else if (args[2].equalsIgnoreCase("member")) {
-                            if (wpa.getType() == PlayerType.MEMBER) {
-                                pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
-                                return true;
-                            }
-                            wpa.setType(PlayerType.MEMBER);
-                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
-                            pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "участник"));
-                            Player pla = WorldLister.getPlayerRight(args[1]);
-                            if (pla != null) {
-                                pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", "участник").replace("%WORLD%", plw));
-                            }
-                        }
-                        else if (args[2].equalsIgnoreCase("spectator")) {
-                            if (wpa.getType() == PlayerType.SPECTATOR) {
-                                pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
-                                return true;
-                            }
-                            wpa.setType(PlayerType.SPECTATOR);
-                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
-                            pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "наблюдатель"));
-                            Player pla = WorldLister.getPlayerRight(args[1]);
-                            if (pla != null) {
-                                pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", "наблюдатель").replace("%WORLD%", plw));
-                            }
-                        }
-                        else {
-                            pl.sendMessage("Значение может быть только 'moder', 'member' и 'spectator'");
+
+                        wpa.setType(newType);
+                        Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), newType, wpa.getTimeAdded(), wpa.getWhoAdd());
+
+                        pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", newType.getName()));
+                        Player pla = WorldLister.getPlayerRight(args[1]);
+                        if (pla != null) {
+                            pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", newType.getName()).replace("%WORLD%", plw));
                         }
                     }
-                    else if (type == PlayerType.MODER) {
-                        if (typea == PlayerType.MODER || typea == PlayerType.OWNER) {
+                    else if (editorType == PlayerType.MODER) {
+                        if (targetType == PlayerType.MODER || targetType == PlayerType.OWNER) {
                             pl.sendMessage(MessageManager.get().getMessage("cmdNotAllowChangeType"));
                             return true;
                         }
-                        if (args[2].equalsIgnoreCase("member")) {
-                            if (wpa.getType() == PlayerType.MEMBER) {
-                                pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
-                                return true;
-                            }
-                            wpa.setType(PlayerType.MEMBER);
-                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.MEMBER.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
-                            pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "участник"));
-                            Player pla = WorldLister.getPlayerRight(args[1]);
-                            if (pla != null) {
-                                pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", "участник").replace("%WORLD%", plw));
-                            }
+
+                        if (wpa.getType() == newType) {
+                            pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
+                            return true;
                         }
-                        else if (args[2].equalsIgnoreCase("spectator")) {
-                            if (wpa.getType() == PlayerType.SPECTATOR) {
-                                pl.sendMessage(MessageManager.get().getMessage("setWorldAre").replace("%PLAYER%", args[1]));
-                                return true;
-                            }
-                            wpa.setType(PlayerType.SPECTATOR);
-                            Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), PlayerType.SPECTATOR.toString(), wpa.getTimeAdded(), wpa.getWhoAdd());
-                            pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", "наблюдатель"));
-                            Player pla = WorldLister.getPlayerRight(args[1]);
-                            if (pla != null) {
-                                pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", "наблюдатель").replace("%WORLD%", plw));
-                            }
-                        }
-                        else {
+
+                        if (!(newType == PlayerType.MEMBER || newType == PlayerType.SPECTATOR)) {
                             pl.sendMessage("Значение может быть только 'member' или 'spectator'");
+                            return true;
                         }
+
+                        wpa.setType(newType);
+                        Sql.getInstance().updateWorldPlayer(plw, wpa.getName(), newType, wpa.getTimeAdded(), wpa.getWhoAdd());
+
+                        pl.sendMessage(MessageManager.get().getMessage("setWorldPl").replace("%PLAYER%", args[1]).replace("%TYPE%", newType.getName()));
+                        Player pla = WorldLister.getPlayerRight(args[1]);
+                        if (pla != null) {
+                            pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", newType.getName()).replace("%WORLD%", plw));
+                        }
+
                     }
                 }
             }
@@ -523,47 +499,46 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("addowner")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(args[2]);
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER) {
-                                sender.sendMessage("Игрок уже является владельцем!");
-                                return true;
-                            }
-                            wp.setType(PlayerType.OWNER);
-                            Sql.getInstance().updateWorldPlayer(wi.getName(), wp.getName(), PlayerType.OWNER.toString(), wp.getTimeAdded(), wp.getWhoAdd());
+                    if (wi == null) {
+                        sender.sendMessage("Мир не найден");
+                        return true;
+                    }
+
+                    WorldPlayer wp = wi.getWorldPlayer(args[2]);
+                    if (wp != null) {
+                        if (wp.getType() == PlayerType.OWNER) {
+                            sender.sendMessage("Игрок уже является владельцем!");
+                            return true;
                         }
-                        else {
-                            wi.addWorldPlayer(new WorldPlayer(args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName()));
-                            Sql.getInstance().updateWorldPlayer(args[1], args[2], PlayerType.OWNER.toString(), System.currentTimeMillis(), sender.getName());
-                        }
-                        sender.sendMessage("Игрок успешно установлен владельцем мира " + args[1]);
+                        wp.setType(PlayerType.OWNER);
+                        Sql.getInstance().updateWorldPlayer(wi.getName(), wp.getName(), PlayerType.OWNER, wp.getTimeAdded(), wp.getWhoAdd());
                     }
                     else {
-                        sender.sendMessage("Мир не найден");
+                        wi.addWorldPlayer(new WorldPlayer(args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName()));
+                        Sql.getInstance().updateWorldPlayer(args[1], args[2], PlayerType.OWNER, System.currentTimeMillis(), sender.getName());
                     }
+                    sender.sendMessage("Игрок успешно установлен владельцем мира " + args[1]);
                 }
                 else if (args[0].equalsIgnoreCase("removeowner")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(args[1]);
-                    if (wi != null) {
-                        WorldPlayer wp = wi.getWorldPlayer(args[2]);
-                        if (wp != null) {
-                            if (wp.getType() == PlayerType.OWNER) {
-                                wi.removeWorldPlayer(args[2]);
-                                Sql.getInstance().removeWorldPlayer(args[1], args[2]);
-                                sender.sendMessage("Игрок успешно удален из владельцев мира " + args[1]);
-                            }
-                            else {
-                                sender.sendMessage("Игрок не владелец.");
-                            }
-                        }
-                        else {
-                            sender.sendMessage("Игрок не найден в это мире.");
-                        }
-                    }
-                    else {
+                    if (wi == null) {
                         sender.sendMessage("Мир не найден");
+                        return true;
                     }
+                    WorldPlayer wp = wi.getWorldPlayer(args[2]);
+                    if (wp == null) {
+                        sender.sendMessage("Игрок не найден в это мире.");
+                        return true;
+                    }
+                    if (wp.getType() != PlayerType.OWNER) {
+                        sender.sendMessage("Игрок не владелец.");
+                        return true;
+                    }
+
+                    wi.removeWorldPlayer(args[2]);
+                    Sql.getInstance().removeWorldPlayer(args[1], args[2]);
+
+                    sender.sendMessage("Игрок успешно удален из владельцев мира " + args[1]);
                 }
             }
         }
@@ -673,12 +648,11 @@ public class Commands implements CommandExecutor, TabCompleter {
                         if (wp.getType() != PlayerType.OWNER) {
                             return empty;
                         }
-                        List<String> ss = new ArrayList<String>(Arrays.asList("public", "access"));
                         List<String> matches = new ArrayList<>();
                         String search = args[1].toLowerCase();
-                        for (String player : ss) {
-                            if (player.toLowerCase().startsWith(search)) {
-                                matches.add(player);
+                        for (WorldAccessType type : WorldAccessType.values()) {
+                            if (type.name().toLowerCase().startsWith(search)) {
+                                matches.add(type.name());
                             }
                         }
                         return matches;
