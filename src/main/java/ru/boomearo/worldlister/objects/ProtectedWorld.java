@@ -12,7 +12,7 @@ public class ProtectedWorld {
     private final String name;
     private final World world;
 
-    private final ConcurrentMap<String, WorldPlayer> players = new ConcurrentHashMap<String, WorldPlayer>();
+    private final ConcurrentMap<String, WorldPlayer> players = new ConcurrentHashMap<>();
 
     private boolean joinIfOwnerOnline;
     private WorldAccessType access;

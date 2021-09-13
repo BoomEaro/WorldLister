@@ -18,7 +18,7 @@ import ru.boomearo.worldlister.objects.WorldPlayer;
 public class WorldListener implements Listener {
 
 
-    //Подгружает настройки мира если мир был подгружен во время работы сервера (например из-за плагинов на мульти миры)
+    //Подгружает настройки мира, если мир был подгружен во время работы сервера (например из-за плагинов на мульти миры)
     //Все запросы будут в основном потоке, потому что миры и так подгружаются там же и всегда будет задержка.
     @EventHandler
     public void onWorldLoadEvent(WorldLoadEvent e) {

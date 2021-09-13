@@ -44,10 +44,10 @@ public class Commands implements CommandExecutor, TabCompleter {
                 if (args[0].equalsIgnoreCase("list")) {
                     ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(pl.getWorld().getName());
                     if (wi != null) {
-                        List<String> owners = new ArrayList<String>();
-                        List<String> moders = new ArrayList<String>();
-                        List<String> members = new ArrayList<String>();
-                        List<String> spectators = new ArrayList<String>();
+                        List<String> owners = new ArrayList<>();
+                        List<String> moders = new ArrayList<>();
+                        List<String> members = new ArrayList<>();
+                        List<String> spectators = new ArrayList<>();
                         for (WorldPlayer wp : wi.getAllWorldPlayers()) {
                             if (wp.getType() == PlayerType.OWNER) {
                                 owners.add(wp.getName());
@@ -62,43 +62,12 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 spectators.add(wp.getName());
                             }
                         }
-                        String[] list = members.toArray(new String[members.size()]);
-                        int len = list.length;
-                        String msg = "";
-
-                        String[] list2 = moders.toArray(new String[moders.size()]);
-                        int len2 = list2.length;
-                        String msg2 = "";
-
-                        String[] list3 = owners.toArray(new String[owners.size()]);
-                        int len3 = list3.length;
-                        String msg3 = "";
-
-                        String[] list4 = spectators.toArray(new String[spectators.size()]);
-                        int len4 = list4.length;
-                        String msg4 = "";
-
-                        for (int i = 0; i < len; i++) {
-                            msg += list[i] + (i != len - 1 ? ChatColor.WHITE + ", " : "");
-                        }
-
-                        for (int i = 0; i < len2; i++) {
-                            msg2 += list2[i] + (i != len2 - 1 ? ChatColor.WHITE + ", " : "");
-                        }
-
-                        for (int i = 0; i < len3; i++) {
-                            msg3 += list3[i] + (i != len3 - 1 ? ChatColor.WHITE + ", " : "");
-                        }
-
-                        for (int i = 0; i < len4; i++) {
-                            msg4 += list4[i] + (i != len4 - 1 ? ChatColor.WHITE + ", " : "");
-                        }
 
                         sender.sendMessage(ChatColor.GOLD + "Список игроков и групп:");
-                        sender.sendMessage("Владельцы " + ChatColor.GOLD + "(" + len3 + ")" + ChatColor.WHITE + ": " + msg3);
-                        sender.sendMessage("Модераторы: " + ChatColor.GOLD + "(" + len2 + ")" + ChatColor.WHITE + ": " + msg2);
-                        sender.sendMessage("Участники: " + ChatColor.GOLD + "(" + len + ")" + ChatColor.WHITE + ": " + msg);
-                        sender.sendMessage("Наблюдатели: " + ChatColor.GOLD + "(" + len4 + ")" + ChatColor.WHITE + ": " + msg4);
+                        sender.sendMessage("Владельцы " + ChatColor.GOLD + "(" + owners.size() + ")" + ChatColor.WHITE + ": " + listToCorrectString(owners));
+                        sender.sendMessage("Модераторы: " + ChatColor.GOLD + "(" + moders.size() + ")" + ChatColor.WHITE + ": " + listToCorrectString(moders));
+                        sender.sendMessage("Участники: " + ChatColor.GOLD + "(" + members.size() + ")" + ChatColor.WHITE + ": " + listToCorrectString(members));
+                        sender.sendMessage("Наблюдатели: " + ChatColor.GOLD + "(" + spectators.size() + ")" + ChatColor.WHITE + ": " + listToCorrectString(spectators));
                         sender.sendMessage("Улучшенный режим: " + (wi.isJoinIfOwnerOnline() ? ChatColor.GREEN + "Активирован" : ChatColor.RED + "Деактивирован"));
                         sender.sendMessage("Режим входа: " + wi.getAccess().getName());
                     }
@@ -136,22 +105,12 @@ public class Commands implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.GOLD + "Список игроков и в каких мирах они находятся:");
                     for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
                         World w = wi.getWorld();
-                        List<String> players = new ArrayList<String>();
+                        List<String> players = new ArrayList<>();
                         for (Player p : w.getPlayers()) {
                             players.add(p.getName());
                         }
-                        String[] lists = players.toArray(new String[players.size()]);
-                        int lens = lists.length;
-                        String msgs = "";
-                        for (int i = 0; i < lens; i++) {
-                            msgs += lists[i] + (i != lens - 1 ? ChatColor.GRAY + ", " : ChatColor.GRAY + "");
-                        }
-                        if (!w.getPlayers().isEmpty()) {
-                            sender.sendMessage("Мир: '" + ChatColor.GOLD + wi.getName() + ChatColor.WHITE + "'. Игроки " + ChatColor.GOLD + "(" + lists.length + ")" + ChatColor.WHITE + ": " + ChatColor.GRAY + msgs);
-                        }
-                        else {
-                            sender.sendMessage("Мир: '" + ChatColor.GOLD + wi.getName() + ChatColor.WHITE + "'. Игроки " + ChatColor.GOLD + "(" + lists.length + ")" + ChatColor.WHITE + ": ");
-                        }
+
+                        sender.sendMessage("Мир: '" + ChatColor.GOLD + wi.getName() + ChatColor.WHITE + "'. Игроки " + ChatColor.GOLD + "(" + players.size() + ")" + ChatColor.WHITE + ": " + ChatColor.GRAY + listToCorrectString(players));
 
                     }
 
@@ -342,7 +301,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     try {
                         type = WorldAccessType.valueOf(args[1].toUpperCase());
                     }
-                    catch (Exception e) {
+                    catch (Exception ignored) {
                     }
                     if (type == null) {
                         sender.sendMessage("Аргумент должен быть значением 'public' или 'access'");
@@ -427,13 +386,14 @@ public class Commands implements CommandExecutor, TabCompleter {
                     try {
                         newType = PlayerType.valueOf(args[2].toUpperCase());
                     }
-                    catch (Exception e) {
+                    catch (Exception ignored) {
                     }
                     if (newType == null) {
                         pl.sendMessage("Значение может быть только 'moder', 'member' и 'spectator'");
                         return true;
                     }
 
+                    //Если овнер редактирует
                     if (editorType == PlayerType.OWNER) {
                         if (targetType == PlayerType.OWNER) {
                             pl.sendMessage(MessageManager.get().getMessage("cmdNotAllowChangeType"));
@@ -454,7 +414,8 @@ public class Commands implements CommandExecutor, TabCompleter {
                             pla.sendMessage(MessageManager.get().getMessage("setWorldToPl").replace("%PLAYER%", pl.getName()).replace("%TYPE%", newType.getName()).replace("%WORLD%", plw));
                         }
                     }
-                    else if (editorType == PlayerType.MODER) {
+                    //В противном случае обрабатываем как модера
+                    else {
                         if (targetType == PlayerType.MODER || targetType == PlayerType.OWNER) {
                             pl.sendMessage(MessageManager.get().getMessage("cmdNotAllowChangeType"));
                             return true;
@@ -751,6 +712,20 @@ public class Commands implements CommandExecutor, TabCompleter {
             }
         }
         return empty;
+    }
+
+    private static String listToCorrectString(List<String> list) {
+        StringBuilder msg = new StringBuilder();
+
+        int max = list.size();
+        int current = 1;
+
+        for (String tmp : list) {
+            msg.append(tmp).append(current != max ? "§f, " : "");
+            current++;
+        }
+
+        return msg.toString();
     }
 
 }

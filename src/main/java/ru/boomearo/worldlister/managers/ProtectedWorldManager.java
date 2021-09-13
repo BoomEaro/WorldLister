@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class ProtectedWorldManager {
 
-    private ConcurrentMap<String, ProtectedWorld> worlds = new ConcurrentHashMap<String, ProtectedWorld>();
+    private ConcurrentMap<String, ProtectedWorld> worlds = new ConcurrentHashMap<>();
 
     public ProtectedWorld getProtectedWorld(String world) {
         return this.worlds.get(world);
@@ -38,7 +38,7 @@ public final class ProtectedWorldManager {
 
     public void loadWorlds()  {
         try {
-            ConcurrentMap<String, ProtectedWorld> tmp = new ConcurrentHashMap<String, ProtectedWorld>();
+            ConcurrentMap<String, ProtectedWorld> tmp = new ConcurrentHashMap<>();
             for (World w : Bukkit.getWorlds()) {
                 SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
                 ProtectedWorld newPw;

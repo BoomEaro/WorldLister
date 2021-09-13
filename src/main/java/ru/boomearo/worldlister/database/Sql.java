@@ -19,12 +19,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.sqlite.JDBC;
 
-import ru.boomearo.bungeechatplus.utils.runnable.AdvThreadFactory;
 import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccessType;
+import ru.boomearo.worldlister.objects.ExtendedThreadFactory;
 
 public class Sql {
 
@@ -51,7 +51,7 @@ public class Sql {
 
         this.connection = DriverManager.getConnection(CON_STR.replace("[path]", WorldLister.getInstance().getDataFolder() + File.separator));
 
-        this.executor = Executors.newFixedThreadPool(1, new AdvThreadFactory("WorldLister-SQL", 3));
+        this.executor = Executors.newFixedThreadPool(1, new ExtendedThreadFactory("WorldLister-SQL", 3));
 
         for (World w : Bukkit.getWorlds()) {
             createNewDatabaseWorld(w.getName());
@@ -117,7 +117,7 @@ public class Sql {
     public Future<List<SectionWorldPlayer>> getAllDataWorldPlayer(String worldName) {
         return this.executor.submit(() -> {
             try (Statement statement = this.connection.createStatement()) {
-                List<SectionWorldPlayer> collections = new ArrayList<SectionWorldPlayer>();
+                List<SectionWorldPlayer> collections = new ArrayList<>();
                 ResultSet resSet = statement.executeQuery("SELECT id, name, type, timeAdded, whoAdd FROM '" + worldName + "'");
                 while (resSet.next()) {
                     collections.add(new SectionWorldPlayer(resSet.getInt("id"), resSet.getString("name"), PlayerType.valueOf(resSet.getString("type").toUpperCase()), resSet.getLong("timeAdded"), resSet.getString("whoAdd")));

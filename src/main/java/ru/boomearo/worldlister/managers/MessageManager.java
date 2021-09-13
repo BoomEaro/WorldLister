@@ -1,7 +1,6 @@
 package ru.boomearo.worldlister.managers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +46,7 @@ public class MessageManager {
             return s;
         }
         else {
-            return new ArrayList<>(Arrays.asList(errorString));
+            return Collections.singletonList(errorString);
         }
     }
 

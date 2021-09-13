@@ -1,12 +1,12 @@
 name: WorldLister
 main: ru.boomearo.worldlister.WorldLister
-version: 0.10.7
+version: 0.11.1
 author: BoomEaro
-description: World lister
+description: Plugin that divides the worlds by access
 api-version: 1.13
 softdepend: [MultiWorld, Multiverse-Core]
 commands:
   worldlister:
-    usage: /worldlist access/list
+    usage: /worldlist access|list
     aliases: [worldlist, wol]
-    description: add/remove player
+    description: Main command
