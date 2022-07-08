@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.sqlite.JDBC;
@@ -24,7 +25,6 @@ import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccessType;
-import ru.boomearo.worldlister.objects.ExtendedThreadFactory;
 
 public class Sql {
 
@@ -51,7 +51,10 @@ public class Sql {
 
         this.connection = DriverManager.getConnection(CON_STR.replace("[path]", WorldLister.getInstance().getDataFolder() + File.separator));
 
-        this.executor = Executors.newFixedThreadPool(1, new ExtendedThreadFactory("WorldLister-SQL", 3));
+        this.executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
+                .setPriority(3)
+                .setNameFormat("WorldLister-SQL-%d")
+                .build());
 
         for (World w : Bukkit.getWorlds()) {
             createNewDatabaseWorld(w.getName());
