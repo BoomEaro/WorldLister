@@ -28,12 +28,19 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 
 import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.managers.MessageManager;
+import ru.boomearo.worldlister.managers.ProtectedWorldManager;
 import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class CheckListener implements Listener {
+
+    private final ProtectedWorldManager protectedWorldManager;
+
+    public CheckListener(ProtectedWorldManager protectedWorldManager) {
+        this.protectedWorldManager = protectedWorldManager;
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerTeleportEvent(PlayerTeleportEvent e) {
@@ -42,7 +49,7 @@ public class CheckListener implements Listener {
         if (pl.hasMetadata("NPC")) {
             return;
         }
-        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
+        ProtectedWorld wi = this.protectedWorldManager.getProtectedWorld(w);
         if (wi == null) {
             return;
         }
@@ -84,7 +91,7 @@ public class CheckListener implements Listener {
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
         Player pl = e.getPlayer();
         String w = pl.getLocation().getWorld().getName();
-        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
+        ProtectedWorld wi = this.protectedWorldManager.getProtectedWorld(w);
         if (wi == null) {
             return;
         }
@@ -94,7 +101,7 @@ public class CheckListener implements Listener {
         WorldPlayer wp = wi.getWorldPlayer(pl.getName());
         String msg = MessageManager.get().getMessage("joinPerms");
         if (wp == null) {
-            pl.teleport(WorldLister.getMainWorld().getSpawnLocation());
+            pl.teleport(this.protectedWorldManager.getMainWorld().getSpawnLocation());
             pl.sendMessage(msg.replace("%WORLD%", w));
         }
     }
@@ -102,13 +109,13 @@ public class CheckListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuitEvent(PlayerQuitEvent e) {
         Player pl = e.getPlayer();
-        for (ProtectedWorld wi : WorldLister.getInstance().getProtectedWorldManager().getAllProtectedWorlds()) {
+        for (ProtectedWorld wi : this.protectedWorldManager.getAllProtectedWorlds()) {
             WorldPlayer wp = wi.getWorldPlayer(pl.getName());
             if (wp != null) {
                 PlayerType type = wp.getType();
                 if (type == PlayerType.OWNER) {
                     if (wi.isJoinIfOwnerOnline()) {
-                        List<String> playerOnline = new ArrayList<String>();
+                        List<String> playerOnline = new ArrayList<>();
                         for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
                             if (wpa.getType() == PlayerType.OWNER) {
                                 if (WorldLister.getPlayerRight(wpa.getName()) != null) {
@@ -176,7 +183,7 @@ public class CheckListener implements Listener {
     public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
         Player pl = e.getPlayer();
         String w = pl.getLocation().getWorld().getName();
-        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(w);
+        ProtectedWorld wi = this.protectedWorldManager.getProtectedWorld(w);
         if (wi == null) {
             return;
         }
@@ -203,7 +210,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnline(wi)) {
+            if (!this.protectedWorldManager.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     if (isIllegalCommand(e.getMessage())) {
                         pl.sendMessage(msg);
@@ -282,16 +289,16 @@ public class CheckListener implements Listener {
         }
     }
 
-    private static void checkProtection(Player pl, Cancellable e) {
+    private void checkProtection(Player pl, Cancellable e) {
         checkProtection(pl, e, null);
     }
 
-    private static void checkProtection(Player pl, Cancellable e, String cancelMessage) {
+    private void checkProtection(Player pl, Cancellable e, String cancelMessage) {
         if (pl.hasMetadata("NPC")) {
             return;
         }
         String worldName = pl.getLocation().getWorld().getName();
-        ProtectedWorld wi = WorldLister.getInstance().getProtectedWorldManager().getProtectedWorld(worldName);
+        ProtectedWorld wi = this.protectedWorldManager.getProtectedWorld(worldName);
         if (wi == null) {
             return;
         }
@@ -323,7 +330,7 @@ public class CheckListener implements Listener {
             }
         }
         else {
-            if (!WorldLister.checkOnline(wi)) {
+            if (!this.protectedWorldManager.checkOnline(wi)) {
                 if (type == PlayerType.MODER || type == PlayerType.MEMBER || type == PlayerType.SPECTATOR) {
                     e.setCancelled(true);
 

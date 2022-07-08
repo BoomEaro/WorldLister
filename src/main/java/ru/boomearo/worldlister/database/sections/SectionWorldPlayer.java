@@ -4,11 +4,11 @@ import ru.boomearo.worldlister.objects.PlayerType;
 
 public class SectionWorldPlayer {
 
-    public final int id;
-    public final String name;
-    public final PlayerType type;
-    public final long timeAdd;
-    public final String whoAdd;
+    private final int id;
+    private final String name;
+    private final PlayerType type;
+    private final long timeAdd;
+    private final String whoAdd;
 
     public SectionWorldPlayer(int id, String Name, PlayerType type, long timeAdd, String whoAdd) {
         this.id = id;
@@ -18,4 +18,23 @@ public class SectionWorldPlayer {
         this.whoAdd = whoAdd;
     }
 
+    public int getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public PlayerType getType() {
+        return this.type;
+    }
+
+    public long getTimeAdd() {
+        return this.timeAdd;
+    }
+
+    public String getWhoAdd() {
+        return this.whoAdd;
+    }
 }

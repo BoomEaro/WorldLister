@@ -37,7 +37,11 @@ public class WorldPlayer {
 
     @Override
     public String toString() {
-        return "(" + this.type.toString() + "/" + this.timeAdded + "/" + this.whoAdd + ")";
+        return "WorldPlayer{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", timeAdded=" + timeAdded +
+                ", whoAdd='" + whoAdd + '\'' +
+                '}';
     }
-
 }

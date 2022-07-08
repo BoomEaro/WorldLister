@@ -70,7 +70,13 @@ public class ProtectedWorld {
 
     @Override
     public String toString() {
-        return "(" + this.players + "/" + this.joinIfOwnerOnline + "/" + this.access.name() + ")";
+        return "ProtectedWorld{" +
+                "name='" + name + '\'' +
+                ", world=" + world +
+                ", players=" + players +
+                ", joinIfOwnerOnline=" + joinIfOwnerOnline +
+                ", access=" + access +
+                '}';
     }
 }
 	

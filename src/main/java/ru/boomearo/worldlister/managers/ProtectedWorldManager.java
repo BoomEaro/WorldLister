@@ -8,6 +8,7 @@ import ru.boomearo.worldlister.WorldLister;
 import ru.boomearo.worldlister.database.Sql;
 import ru.boomearo.worldlister.database.sections.SectionWorld;
 import ru.boomearo.worldlister.database.sections.SectionWorldPlayer;
+import ru.boomearo.worldlister.objects.PlayerType;
 import ru.boomearo.worldlister.objects.ProtectedWorld;
 import ru.boomearo.worldlister.objects.WorldAccessType;
 import ru.boomearo.worldlister.objects.WorldPlayer;
@@ -19,6 +20,15 @@ import java.util.concurrent.ConcurrentMap;
 public final class ProtectedWorldManager {
 
     private ConcurrentMap<String, ProtectedWorld> worlds = new ConcurrentHashMap<>();
+    private final World mainWorld;
+
+    public ProtectedWorldManager(World mainWorld) {
+        this.mainWorld = mainWorld;
+    }
+
+    public World getMainWorld() {
+        return this.mainWorld;
+    }
 
     public ProtectedWorld getProtectedWorld(String world) {
         return this.worlds.get(world);
@@ -43,7 +53,7 @@ public final class ProtectedWorldManager {
                 SectionWorld sw = Sql.getInstance().getDataSettings(w.getName()).get();
                 ProtectedWorld newPw;
                 if (sw != null) {
-                    newPw = new ProtectedWorld(w.getName(), w, sw.joinIf, sw.access);
+                    newPw = new ProtectedWorld(w.getName(), w, sw.isJoinIf(), sw.getAccess());
                 }
                 else {
                     newPw = new ProtectedWorld(w.getName(), w, false, WorldAccessType.PUBLIC);
@@ -51,7 +61,7 @@ public final class ProtectedWorldManager {
                 }
 
                 for (SectionWorldPlayer swp : Sql.getInstance().getAllDataWorldPlayer(newPw.getName()).get()) {
-                    newPw.addWorldPlayer(new WorldPlayer(swp.name, swp.type, swp.timeAdd, swp.whoAdd));
+                    newPw.addWorldPlayer(new WorldPlayer(swp.getName(), swp.getType(), swp.getTimeAdd(), swp.getWhoAdd()));
                 }
 
                 tmp.put(w.getName(), newPw);
@@ -79,8 +89,19 @@ public final class ProtectedWorldManager {
                 continue;
             }
 
-            pl.teleport(WorldLister.getMainWorld().getSpawnLocation());
+            pl.teleport(this.mainWorld.getSpawnLocation());
             pl.sendMessage(msg.replace("%WORLD%", w));
         }
+    }
+
+    public boolean checkOnline(ProtectedWorld wi) {
+        for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
+            if (wpa.getType() == PlayerType.OWNER) {
+                if (WorldLister.getPlayerRight(wpa.getName()) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

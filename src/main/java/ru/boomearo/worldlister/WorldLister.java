@@ -4,7 +4,6 @@ import java.io.File;
 import java.sql.SQLException;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,24 +14,16 @@ import ru.boomearo.worldlister.listeners.CheckListener;
 import ru.boomearo.worldlister.listeners.WorldListener;
 import ru.boomearo.worldlister.managers.MessageManager;
 import ru.boomearo.worldlister.managers.ProtectedWorldManager;
-import ru.boomearo.worldlister.objects.PlayerType;
-import ru.boomearo.worldlister.objects.ProtectedWorld;
-import ru.boomearo.worldlister.objects.WorldPlayer;
 
 public class WorldLister extends JavaPlugin implements Listener {
 
-    private ProtectedWorldManager manager = null;
+    private ProtectedWorldManager protectedWorldManager = null;
 
     private static WorldLister instance = null;
-
-    private static World mainWorld = null;
 
     @Override
     public void onEnable() {
         instance = this;
-
-        //Получаем самый основной мир
-        mainWorld = Bukkit.getWorlds().get(0);
 
         File configFile = new File(getDataFolder() + File.separator + "config.yml");
         if (!configFile.exists()) {
@@ -43,18 +34,18 @@ public class WorldLister extends JavaPlugin implements Listener {
         MessageManager.get().loadMessages();
         loadDataBase();
 
-        if (this.manager == null) {
-            this.manager = new ProtectedWorldManager();
+        if (this.protectedWorldManager == null) {
+            this.protectedWorldManager = new ProtectedWorldManager(Bukkit.getWorlds().get(0));
 
-            this.manager.loadWorlds();
+            this.protectedWorldManager.loadWorlds();
 
-            this.manager.checkPlayersAccess();
+            this.protectedWorldManager.checkPlayersAccess();
         }
 
-        getServer().getPluginManager().registerEvents(new CheckListener(), this);
-        getServer().getPluginManager().registerEvents(new WorldListener(), this);
+        getServer().getPluginManager().registerEvents(new CheckListener(this.protectedWorldManager), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(this.protectedWorldManager), this);
 
-        getCommand("worldlister").setExecutor(new Commands());
+        getCommand("worldlister").setExecutor(new Commands(this.protectedWorldManager));
 
         getLogger().info("Плагин успешно запущен.");
     }
@@ -73,15 +64,11 @@ public class WorldLister extends JavaPlugin implements Listener {
     }
 
     public ProtectedWorldManager getProtectedWorldManager() {
-        return manager;
+        return this.protectedWorldManager;
     }
 
     public static WorldLister getInstance() {
         return instance;
-    }
-
-    public static World getMainWorld() {
-        return mainWorld;
     }
 
     public void loadDataBase() {
@@ -94,17 +81,6 @@ public class WorldLister extends JavaPlugin implements Listener {
         catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public static boolean checkOnline(ProtectedWorld wi) {
-        for (WorldPlayer wpa : wi.getAllWorldPlayers()) {
-            if (wpa.getType() == PlayerType.OWNER) {
-                if (getPlayerRight(wpa.getName()) != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public static Player getPlayerRight(String name) {
